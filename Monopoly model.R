@@ -1,28 +1,40 @@
 
+# for every bug make a unit test
 
-#create number of patches and patch list
+#Initialization parameters
 
-n_patches <- 1
+#it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
+n_patches <- 10
 
-patch_ID <- 1:n_patches
+n_bands <- 10
 
-patches <- list(patch_ID = patch_ID)
+resources <- 10
 
+
+
+#patch list
+
+#might actually want to have patch ID based on actual coordinates
+
+patches <- list()
+
+patches$patch_ID <- 1:n_patches
+patches$resources <- rep(resources, n_patches)
 
 
 #create number of bands and band list
-n_bands <- 10
 
 bands <- list()
 
 bands$ID <- 1:n_bands
 bands$payoff <- rep(0, n_bands)
 bands$fitness <- rep(0, n_bands)
-bands$patch_id <- #random sample from the possible patches 
+bands$patch_id <- sample(n_patches, n_bands, replace = TRUE) 
 str(bands)
 
+#need to add bands ID to patches
 
 
 
-# for every bug make a unit test
+
 
