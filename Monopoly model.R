@@ -34,17 +34,16 @@ bands$patch_id <- sample(n_patches, n_bands, replace = TRUE)
 str(bands)
 
 #need to add bands ID to patches
-index <- list()
-
-
 
 for (i in 1:n_patches){
-    index[[i]] <- which(bands$patch_id == i)
-    if (length(index[[i]]) == 0) {
-      index[[i]] <- "NA"
-    }
-    patches$bands_id[[i]] <- bands$band_id[index[[i]]]
+  temp <- which(bands$patch_id == i)
+  if (length(temp) == 0) {
+    patches$bands_id[[i]] <- "NA"
+  } else {
+    patches$bands_id[[i]] <- bands$band_id[temp]
+  }
 }
+
 
 
 
