@@ -6,7 +6,7 @@
 #it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
 n_patches <- 10
 n_bands <- 10
-resources <- 1:10
+resources <- 10
 
 #Fitness calculation parameteres
 payoff_default <- 10
@@ -21,7 +21,7 @@ sigma <- 1
 patches <- list()
 
 patches$patch_id <- 1:n_patches
-patches$resources <- sample(resources, n_patches, replace = TRUE)
+patches$resources <- rep(resources, n_patches)
 patches$bands_id <- list()
 
 
@@ -33,7 +33,7 @@ bands$band_id <- 1:n_bands
 bands$payoff <- rep(0, n_bands)
 bands$fitness <- rep(0, n_bands)
 bands$patch_id <- sample(n_patches, n_bands, replace = TRUE) 
-str(bands)
+
 
 #need to add bands ID to patches
 
@@ -64,9 +64,17 @@ for (i in 1: length(index_occupied)){
       
           #fitness calculation 
           #directly calculating group foraging payoff and fitness 
-          if((bands$payoff[i]*bands$groupsize[i]) > patches$resources[bands$patch_id[i]]   )
+          if((bands$payoff[index_occupied[i]]*bands$groupsize[index_occupied[i]]) > patches$resources[bands$patch_id[index_occupied[i]]]){
+            bands$fitness[index_occupied[i]] <- patches$resources[bands$patch_id[index_occupied[i]]]/bands$groupsize[index_occupied[i]] 
+          } else {
+            bands$fitness[index_occupied[i]] <- (bands$payoff[index_occupied[i]]*bands$groupsize[index_occupied[i]])/bands$groupsize[index_occupied[i]]  
+          }
   
 }
+
+#check things are working fine - because groupsize and patch id don't line up.
+
+#birth and death process
 
 
 
