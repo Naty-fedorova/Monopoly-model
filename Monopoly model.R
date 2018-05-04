@@ -48,33 +48,43 @@ for (i in 1:n_patches){
 }
 
 
-#fitness calculation
+###FITNESS###
 
-#occupied index so that calculations are not done on irrelevant patches
-index_occupied <- which(!is.na(patches$bands_id))
 
-#groupsize calculation 
-#do I need to track groupsize separate from the fitness calculation? because otherwise I can just put this into the payoff calculation
-for (i in 1: length(index_occupied)){
-    bands$groupsize[index_occupied[i]] <- length(patches$bands_id[[index_occupied[i]]])
+# calculate groupsizes for each agent
+for(i in 1:n_bands){
+  
+bands$groupsize[i] <- length(patches$bands_id[[bands$patch_id[i]]])
+  
+}
+  
+#calculate each bands payoff  
+for (i in 1: n_bands){
+    bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$groupsize[i] -1)^cooperative_benefit, sigma)
+    #the 1 in rnorm is number of observations
+}
 
-      #payoff calculation
-      bands$payoff[index_occupied[i]] <- rnorm( 1 , mean = payoff_default + (bands$groupsize[index_occupied[i]] - 1)^cooperative_benefit, sigma)
-      #the 1 in rnorm is number of observations
-      
-          #fitness calculation 
-          #directly calculating group foraging payoff and fitness 
-          if((bands$payoff[index_occupied[i]]*bands$groupsize[index_occupied[i]]) > patches$resources[bands$patch_id[index_occupied[i]]]){
-            bands$fitness[index_occupied[i]] <- patches$resources[bands$patch_id[index_occupied[i]]]/bands$groupsize[index_occupied[i]] 
-          } else {
-            bands$fitness[index_occupied[i]] <- (bands$payoff[index_occupied[i]]*bands$groupsize[index_occupied[i]])/bands$groupsize[index_occupied[i]]  
-          }
+#FIX ME - below, removed the index_occupied because then payoff element would not match length of others - better way?
+#index_occupied <- which(!is.na(patches$bands_id))
+for (i in 1: n_patches){
+      temp_2 <- unlist(patches$bands_id[i])
+      patches$payoff[i] <- sum(bands$payoff[temp_2])
   
 }
 
-#check things are working fine - because groupsize and patch id don't line up.
+#calculate fitness based on density dependence
+for (i in 1:n_bands){
+      if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
+        bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$groupsize[i]
+      } else {
+        bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$groupsize[i]
+      }
+}
 
-#birth and death process
+
+
+###BIRTH AND DEATH PROCESS###
+
 
 
 
