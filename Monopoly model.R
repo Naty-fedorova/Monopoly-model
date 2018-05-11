@@ -13,6 +13,11 @@ payoff_default <- 10
 cooperative_benefit <- 0.5
 sigma <- 1
 
+#Birth and Death parameters
+rep_rate <- 0.5
+death_par_1 <- 0.8
+death_par_2 <- 5
+
 
 #patch list
 
@@ -84,6 +89,30 @@ for (i in 1:n_bands){
 
 
 ###BIRTH AND DEATH PROCESS###
+
+for (i in 1:n_bands){
+
+      #Birth
+        
+      #Get probability of birth for each band  
+      #FIX ME - for now, storing birth/death prob in bands, but probably don't need to store it (make temp vector)  
+      bands$birth_prob[i] <- rep_rate*(bands$fitness[i]/bands$payoff[i])
+      
+      #Get birth/not birth of each band
+      #FIX ME - same here, doesn't need to be stored, just temp vector
+      bands$birth[i] <- rbinom(1, size = 1, prob = bands$birth_prob[i])
+      
+      #Death
+      
+      #Get probability of death for each band
+      bands$death_prob[i] <- 1/(1+exp(1)^((death_par_1*bands$fitness[i])-death_par_2))
+
+      #Get death/not death of each band
+      bands$death[i] <- rbinom(1, size = 1, prob = bands$death_prob[i])
+
+}
+
+
 
 
 
