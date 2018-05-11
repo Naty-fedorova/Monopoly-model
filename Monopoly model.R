@@ -59,13 +59,13 @@ for (i in 1:n_patches){
 # calculate groupsizes for each agent
 for(i in 1:length(bands$band_id)){
   
-bands$groupsize[i] <- length(patches$bands_id[[bands$patch_id[i]]])
+bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
   
 }
   
 #calculate each bands payoff  
 for (i in 1: length(bands$band_id)){
-    bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$groupsize[i] -1)^cooperative_benefit, sigma)
+    bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
     #the 1 in rnorm is number of observations
 }
 
@@ -80,9 +80,9 @@ for (i in 1: n_patches){
 #calculate fitness based on density dependence
 for (i in 1: length(bands$band_id)){
       if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
-        bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$groupsize[i]
+        bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$group_size[i]
       } else {
-        bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$groupsize[i]
+        bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$group_size[i]
       }
 }
 
@@ -142,7 +142,7 @@ bands$band_id[as.logical(bands$death)] <- NA
 bands$payoff[as.logical(bands$death)] <- NA 
 bands$fitness[as.logical(bands$death)] <- NA 
 bands$patch_id[as.logical(bands$death)] <- NA 
-bands$groupsize[as.logical(bands$death)] <- NA
+bands$group_size[as.logical(bands$death)] <- NA
 
 
 #Clone band_id, payoff, fitness, patch_id
