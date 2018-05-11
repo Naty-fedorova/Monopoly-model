@@ -159,8 +159,8 @@ bands$patch_id <- append(bands$patch_id, bands$patch_id[as.logical(bands$birth)]
 #TO DO
 #discuss what to do about cloning, and therefore whether to have loop getting unique birth/death
 #recalculate group size after birth/death process
-#rename groupsize group_size for consistency
 #discuss and code not storing birth and death probabilities and vectors
+#update patches list based on births and deaths
 
 
 
