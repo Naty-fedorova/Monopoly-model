@@ -105,12 +105,46 @@ for (i in 1:n_bands){
       #Death
       
       #Get probability of death for each band
+      #FIX ME - doesn't need to be stored
       bands$death_prob[i] <- 1/(1+exp(1)^((death_par_1*bands$fitness[i])-death_par_2))
 
       #Get death/not death of each band
+      #FIX ME - doesn't need to be stored
       bands$death[i] <- rbinom(1, size = 1, prob = bands$death_prob[i])
-
+      
 }
+
+#FIX ME - think about how to do it in one go, instead of adding births and then subtracting deaths
+#this is actually quite a big problem because when they are already added, they will not be removed correctly by the deaths
+#this all depends on if we think a certain band will have a birth and death even simultaneously
+
+#An attempt at above
+for (i in 1: n_bands){
+  #if both of those are true
+  if((as.logical(bands$birth[i]))&(as.logical(bands$death[i])) == TRUE){
+    #then they both have to become 0 i.e. they cancel each other out
+    bands$birth[i] <- 0
+    bands$death[i] <- 0
+    #otherwise both stay the same 
+  } else {
+    bands$birth[i] <- bands$birth[i]
+    bands$death[i] <- bands$death[i]
+  }
+  
+}
+
+#After the above for loop, I should only have unique birth and death events (not those that cancel each other out)
+
+
+#Clone band_id, payoff, fitness, patch_id
+#FIX ME - for now, new bands are clones of old ones, but need to think about whether this works
+bands$band_id <- append(bands$band_id, bands$band_id[as.logical(bands$birth)], after = length(bands$band_id))
+bands$payoff <- append(bands$payoff, bands$payoff[as.logical(bands$birth)], after = length(bands$band_id))
+bands$fitness <- append(bands$fitness, bands$fitness[as.logical(bands$birth)], after = length(bands$band_id))
+bands$patch_id <- append(bands$patch_id, bands$patch_id[as.logical(bands$birth)], after = length(bands$band_id))
+
+#Remove dead bands
+
 
 
 
