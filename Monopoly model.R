@@ -57,14 +57,14 @@ for (i in 1:n_patches){
 
 
 # calculate groupsizes for each agent
-for(i in 1:n_bands){
+for(i in 1:length(bands$band_id)){
   
 bands$groupsize[i] <- length(patches$bands_id[[bands$patch_id[i]]])
   
 }
   
 #calculate each bands payoff  
-for (i in 1: n_bands){
+for (i in 1: length(bands$band_id)){
     bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$groupsize[i] -1)^cooperative_benefit, sigma)
     #the 1 in rnorm is number of observations
 }
@@ -78,7 +78,7 @@ for (i in 1: n_patches){
 }
 
 #calculate fitness based on density dependence
-for (i in 1:n_bands){
+for (i in 1: length(bands$band_id)){
       if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
         bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$groupsize[i]
       } else {
@@ -90,7 +90,7 @@ for (i in 1:n_bands){
 
 ###BIRTH AND DEATH PROCESS###
 
-for (i in 1:n_bands){
+for (i in 1:length(bands$band_id)){
 
       #Birth
         
@@ -116,10 +116,10 @@ for (i in 1:n_bands){
 
 #FIX ME - think about how to do it in one go, instead of adding births and then subtracting deaths
 #this is actually quite a big problem because when they are already added, they will not be removed correctly by the deaths
-#this all depends on if we think a certain band will have a birth and death even simultaneously
+#but by doing the below loop, we as if always kill off new borns - so if we do not clone them then it matters - DISCUSS
 
 #An attempt at above
-for (i in 1: n_bands){
+for (i in 1: length(bands$band_id)){
   #if both of those are true
   if((as.logical(bands$birth[i]))&(as.logical(bands$death[i])) == TRUE){
     #then they both have to become 0 i.e. they cancel each other out
@@ -136,18 +136,31 @@ for (i in 1: n_bands){
 #After the above for loop, I should only have unique birth and death events (not those that cancel each other out)
 
 
+#Remove dead bands
+#FIX ME - doesn't work because index repeats once its length finishes - fixed for now by putting death process first
+bands$band_id[as.logical(bands$death)] <- NA 
+bands$payoff[as.logical(bands$death)] <- NA 
+bands$fitness[as.logical(bands$death)] <- NA 
+bands$patch_id[as.logical(bands$death)] <- NA 
+bands$groupsize[as.logical(bands$death)] <- NA
+
+
 #Clone band_id, payoff, fitness, patch_id
 #FIX ME - for now, new bands are clones of old ones, but need to think about whether this works
-bands$band_id <- append(bands$band_id, bands$band_id[as.logical(bands$birth)], after = length(bands$band_id))
+bands$band_id <- append(bands$band_id, bands$band_id[as.logical(bands$birth)], after = length(bands$band_id)) 
 bands$payoff <- append(bands$payoff, bands$payoff[as.logical(bands$birth)], after = length(bands$band_id))
 bands$fitness <- append(bands$fitness, bands$fitness[as.logical(bands$birth)], after = length(bands$band_id))
 bands$patch_id <- append(bands$patch_id, bands$patch_id[as.logical(bands$birth)], after = length(bands$band_id))
 
-#Remove dead bands
 
 
+#NOTE - group size is not updated as of yet
 
-
+#TO DO
+#discuss what to do about cloning, and therefore whether to have loop getting unique birth/death
+#recalculate group size after birth/death process
+#rename groupsize group_size for consistency
+#discuss and code not storing birth and death probabilities and vectors
 
 
 
