@@ -126,11 +126,7 @@ for (i in 1: length(bands$band_id)){
     bands$birth[i] <- 0
     bands$death[i] <- 0
     #otherwise both stay the same 
-  } else {
-    bands$birth[i] <- bands$birth[i]
-    bands$death[i] <- bands$death[i]
-  }
-  
+  } 
 }
 
 #After the above for loop, I should only have unique birth and death events (not those that cancel each other out)
@@ -147,6 +143,7 @@ bands$group_size[as.logical(bands$death)] <- NA
 
 #Clone band_id, payoff, fitness, patch_id
 #FIX ME - for now, new bands are clones of old ones, but need to think about whether this works
+#FIX ME - at the moment id is cloned which will cause problems further upstream - need unique ids for new agents
 bands$band_id <- append(bands$band_id, bands$band_id[as.logical(bands$birth)], after = length(bands$band_id)) 
 bands$payoff <- append(bands$payoff, bands$payoff[as.logical(bands$birth)], after = length(bands$band_id))
 bands$fitness <- append(bands$fitness, bands$fitness[as.logical(bands$birth)], after = length(bands$band_id))
