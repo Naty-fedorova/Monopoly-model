@@ -158,7 +158,7 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
 #TO DO
 #update patches list based on births and deaths
 #above fixes
-#put everything in a loop 
+#tests on birth death additions
 
 
 
