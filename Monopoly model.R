@@ -3,9 +3,12 @@
 
 #Initialization parameters
 
+#timesteps
+timesteps <- 10
+
 #it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
 n_patches <- 10
-n_bands <- 10
+n_bands_ini <- 10
 resources <- 10
 
 #Fitness calculation parameteres
@@ -34,113 +37,123 @@ patches$bands_id <- list()
 
 bands <- list()
 
-bands$band_id <- 1:n_bands
-bands$payoff <- rep(0, n_bands)
-bands$fitness <- rep(0, n_bands)
-bands$patch_id <- sample(n_patches, n_bands, replace = TRUE) 
+bands$band_id <- 1:n_bands_ini
+bands$payoff <- rep(0, n_bands_ini)
+bands$fitness <- rep(0, n_bands_ini)
+bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE) 
 
 
-#need to add bands ID to patches
+#Loop over timesteps
+#for (j in 1:timesteps){
 
-#take some time to look over this
-for (i in 1:n_patches){
-  temp <- which(bands$patch_id == i)
-  if (length(temp) == 0) {
-    patches$bands_id[[i]] <- NA
-  } else {
-    patches$bands_id[[i]] <- bands$band_id[temp]
-  }
-}
-
-
-###FITNESS###
-
-
-# calculate groupsizes for each agent
-for(i in 1:length(bands$band_id)){
-  
-bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
-  
-}
-  
-#calculate each bands payoff  
-for (i in 1: length(bands$band_id)){
-    bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
-    #the 1 in rnorm is number of observations
-}
-
-#FIX ME - below, removed the index_occupied because then payoff element would not match length of others - better way?
-#index_occupied <- which(!is.na(patches$bands_id))
-for (i in 1: n_patches){
-      temp_2 <- unlist(patches$bands_id[i])
-      patches$payoff[i] <- sum(bands$payoff[temp_2])
-  
-}
-
-#calculate fitness based on density dependence
-for (i in 1: length(bands$band_id)){
-      if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
-        bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$group_size[i]
+      #(Re)calculate n_bands so that it adapts to the increasing/decreasing pop. size
+      n_bands <- length(bands$band_id)
+      
+        
+      #Add bands ID to patches list
+      for (i in 1:n_patches){
+        temp <- which(bands$patch_id == i)
+        if (length(temp) == 0) {
+          patches$bands_id[[i]] <- NA
+        } else {
+          patches$bands_id[[i]] <- bands$band_id[temp]
+        }
+      }
+      
+      
+      ###FITNESS###
+      
+      #Groupsize and payoff calculation 
+      for(i in 1:length(bands$band_id)){
+            
+            # calculate groupsizes for each agent  
+            bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
+            
+            #calculate each bands payoff 
+            bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
+            #the 1 in rnorm is number of observations
+      }
+        
+       
+      #FIX ME - below, removed the index_occupied because then payoff element would not match length of others - better way?
+      #index_occupied <- which(!is.na(patches$bands_id))
+      for (i in 1: n_patches){
+            temp_2 <- unlist(patches$bands_id[i])
+            patches$payoff[i] <- sum(bands$payoff[temp_2])
+        
+      }
+      
+      #calculate fitness based on density dependence
+      for (i in 1: length(bands$band_id)){
+            if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
+              bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$group_size[i]
+            } else {
+              bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$group_size[i]
+            } 
+              
+                  ###BIRTH AND DEATH PROCESS###
+                  #FIX ME - for now, storing birth/death prob in bands, but probably don't need to store it (make temp vector) 
+                  
+                  #Birth
+                  
+                  #Get probability of birth for each band  
+                  bands$birth_prob[i] <- rep_rate*(bands$fitness[i]/bands$payoff[i])
+                  
+                  #Get birth/not birth of each band
+                  bands$birth[i] <- rbinom(1, size = 1, prob = bands$birth_prob[i])
+                  
+                  #Death
+                  
+                  #Get probability of death for each band
+                  bands$death_prob[i] <- 1/(1+exp(1)^((death_par_1*bands$fitness[i])-death_par_2))
+                  
+                  #Get death/not death of each band
+                  bands$death[i] <- rbinom(1, size = 1, prob = bands$death_prob[i])
+              
+              
+      }
+      
+      #Index of which bands died
+      death_index <- which(bands$death == 1)
+      
+      
+      #Remove dead from bands and birth index
+      #FIX ME - should I also remove these from the death and death_prob vectors? 
+      bands$band_id <- bands$band_id[-(death_index)]  
+      bands$payoff <- bands$payoff[-(death_index)]
+      bands$fitness <- bands$fitness[-(death_index)]  
+      bands$patch_id <- bands$patch_id[-(death_index)]
+      bands$group_size <- bands$group_size[-(death_index)]
+      #FIX ME - birth_prob won't be necessary once it isn't being stored, just now so it doesn't look confusing 
+      bands$birth_prob <- bands$birth_prob[-(death_index)]
+      bands$birth <- bands$birth[-(death_index)]
+      
+      
+      #Index of bands that are reproducing
+      birth_index <- which(bands$birth == 1)
+      
+      
+      #Clone band_id, payoff, fitness, patch_id of those bands that are giving birth, assign new band_id though
+      #generate new ids
+      #FIX ME - make function so that "value"(n_bands) updates after each run and then ids are assigned - cumulative id values as if 
+      n_bands_id <- n_bands_ini 
+      
+      if(length(birth_index) > 0){
+        new_ids <- rep((n_bands+1):(n_bands+length(birth_index)))
       } else {
-        bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$group_size[i]
-      } 
-        
-            ###BIRTH AND DEATH PROCESS###
-            #FIX ME - for now, storing birth/death prob in bands, but probably don't need to store it (make temp vector) 
-            
-            #Birth
-            
-            #Get probability of birth for each band  
-            bands$birth_prob[i] <- rep_rate*(bands$fitness[i]/bands$payoff[i])
-            
-            #Get birth/not birth of each band
-            bands$birth[i] <- rbinom(1, size = 1, prob = bands$birth_prob[i])
-            
-            #Death
-            
-            #Get probability of death for each band
-            bands$death_prob[i] <- 1/(1+exp(1)^((death_par_1*bands$fitness[i])-death_par_2))
-            
-            #Get death/not death of each band
-            bands$death[i] <- rbinom(1, size = 1, prob = bands$death_prob[i])
-        
-        
-}
-
-#Index of which bands died
-death_index <- which(bands$death == 1)
-
-
-#Remove dead from bands and birth index
-#FIX ME - should I also remove these from the death and death_prob vectors? 
-bands$band_id <- bands$band_id[-(death_index)]  
-bands$payoff <- bands$payoff[-(death_index)]
-bands$fitness <- bands$fitness[-(death_index)]  
-bands$patch_id <- bands$patch_id[-(death_index)]
-bands$group_size <- bands$group_size[-(death_index)]
-#FIX ME - birth_prob won't be necessary once it isn't being stored, just now so it doesn't look confusing 
-bands$birth_prob <- bands$birth_prob[-(death_index)]
-bands$birth <- bands$birth[-(death_index)]
-
-#Index of bands that are reproducing
-birth_index <- which(bands$birth == 1)
-
-
-#Clone band_id, payoff, fitness, patch_id of those bands that are giving birth, assign new band_id though
-#generate new ids
-#FIX ME - make function so that "value" updates after each run and then ids are assigned
-#FIX ME - need loop, only generate ids if birth index has a positive length
-new_ids <- rep((n_bands+1):(n_bands+length(birth_index)))
-
-#Appends new ids to band_id, and clone value of reproduced bands for payoff, fitness, and patch_id
-bands$band_id <- append(bands$band_id, new_ids, after = length(bands$band_id)) 
-bands$payoff <- append(bands$payoff, bands$payoff[birth_index])
-bands$fitness <- append(bands$fitness, bands$fitness[birth_index])
-bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
-
-#Not updating groupsize because that needs to be recalculated
-
-
+        new_ids <- NULL
+      }
+      
+      
+      #Appends new ids to band_id, and clone value of reproduced bands for payoff, fitness, and patch_id
+      bands$band_id <- append(bands$band_id, new_ids, after = length(bands$band_id)) 
+      bands$payoff <- append(bands$payoff, bands$payoff[birth_index])
+      bands$fitness <- append(bands$fitness, bands$fitness[birth_index])
+      bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
+      
+      
+      #FIX ME - need to first update patches list with band ID and recalculate groupsizes,  
+#}
 
 #TO DO
 #update patches list based on births and deaths
