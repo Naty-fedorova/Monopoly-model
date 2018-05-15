@@ -128,6 +128,8 @@ birth_index <- which(bands$birth == 1)
 
 #Clone band_id, payoff, fitness, patch_id of those bands that are giving birth, assign new band_id though
 #generate new ids
+#FIX ME - make function so that "value" updates after each run and then ids are assigned
+#FIX ME - need loop, only generate ids if birth index has a positive length
 new_ids <- rep((n_bands+1):(n_bands+length(birth_index)))
 
 #Appends new ids to band_id, and clone value of reproduced bands for payoff, fitness, and patch_id
@@ -142,6 +144,8 @@ bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
 
 #TO DO
 #update patches list based on births and deaths
+#above fixes
+#put everything in a loop 
 
 
 
