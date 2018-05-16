@@ -124,7 +124,8 @@ for (j in 1:timesteps){
       death_index <- which(bands$death == 1)
       
       
-      #Remove dead from bands and birth index
+      #Remove dead from bands and birth index, if death index is more than 0
+      if(length(death_index) > 0){
       bands$band_id <- bands$band_id[-(death_index)]  
       bands$payoff <- bands$payoff[-(death_index)]
       bands$fitness <- bands$fitness[-(death_index)]  
@@ -135,6 +136,7 @@ for (j in 1:timesteps){
       bands$birth <- bands$birth[-(death_index)]
       bands$death_prob <- bands$death_prob[-(death_index)]
       bands$death <- bands$death[-(death_index)]
+      } 
       
       
       #Index of bands that are reproducing
