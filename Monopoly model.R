@@ -74,16 +74,26 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
             #the 1 in rnorm is number of observations
       }
         
-       
-      #FIX ME - below, removed the index_occupied because then payoff element would not match length of others - better way?
-      #index_occupied <- which(!is.na(patches$bands_id))
+
+      #Calculate patch payoff by summing payoff of bands in that patch 
       for (i in 1: n_patches){
-            temp_2 <- unlist(patches$bands_id[i])
-            patches$payoff[i] <- sum(bands$payoff[temp_2])
-        
+          
+            if(length(patches$bands_id) > 0){
+            
+            temp_2 <- match(unlist(patches$bands_id[i]), bands$band_id)
+            
+            patches$payoff[i] <- sum(bands$payoff[temp_2]) 
+            
+            #here i need what to do with occupied patches
+            
+            } else {
+              # if that patch is not occupied, put in an na for payoff
+              patches$payoff[i] <- NA
+            }
       }
-      
-      #calculate fitness based on density dependence
+        
+
+      #Calculate fitness based on density dependence
       for (i in 1: length(bands$band_id)){
             if(patches$payoff[bands$patch_id[i]] >= patches$resources[bands$patch_id[i]]){
               bands$fitness[i] <- patches$resources[bands$patch_id[i]]/bands$group_size[i]
@@ -136,10 +146,10 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
       #Clone band_id, payoff, fitness, patch_id of those bands that are giving birth, assign new band_id though
       #generate new ids
       #FIX ME - make function so that "value"(n_bands) updates after each run and then ids are assigned - cumulative id values as if 
-      n_bands_id <- n_bands_ini 
+
       
       if(length(birth_index) > 0){
-        new_ids <- rep((n_bands+1):(n_bands+length(birth_index)))
+        new_ids <- rep((max(bands$band_id)+1):(max(bands$band_id)+length(birth_index)))
       } else {
         new_ids <- NULL
       }
