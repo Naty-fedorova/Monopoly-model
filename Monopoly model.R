@@ -39,6 +39,12 @@ bands$payoff <- rep(0, n_bands_ini)
 bands$fitness <- rep(0, n_bands_ini)
 bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE) 
 
+#Initialize matrix to hold loop results
+loop_results <- list()
+loop_results$band_id <- list()
+
+
+
 
 #Loop over timesteps
 for (j in 1:timesteps){
@@ -156,9 +162,11 @@ for (j in 1:timesteps){
       bands$fitness <- append(bands$fitness, bands$fitness[birth_index])
       bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
       
+      #FIX ME - need to first update patches list with band ID and recalculate groupsizes, before model goes on to fission fusion
       
-      #FIX ME - need to first update patches list with band ID and recalculate groupsizes, before model goes on to fission fusion  
-}
+      #Store temp loop output
+      loop_results$band_id[j] <- patches$bands_id 
+}      
 
 #TO DO
 #look at death probabilities - too high, everything is dying too soon 
