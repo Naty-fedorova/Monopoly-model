@@ -165,7 +165,7 @@ for (j in 1:timesteps){
       #FIX ME - need to first update patches list with band ID and recalculate groupsizes, before model goes on to fission fusion
       
       #Store temp loop output
-      loop_results$band_id[j] <- patches$bands_id 
+      loop_results$band_id[[j]] <- patches$bands_id 
 }      
 
 #TO DO
