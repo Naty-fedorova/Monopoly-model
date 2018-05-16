@@ -9,7 +9,7 @@ timesteps <- 10
 #it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
 n_patches <- 10
 n_bands_ini <- 10
-resources <- 10
+resources <- 200
 
 #Fitness calculation parameteres
 payoff_default <- 10
@@ -17,15 +17,13 @@ cooperative_benefit <- 0.5
 sigma <- 1
 
 #Birth and Death parameters
-rep_rate <- 0.5
+rep_rate <- 0.05
 death_par_1 <- 0.8
 death_par_2 <- 5
 
 
 #patch list
-
 #might actually want to have patch ID based on actual coordinates
-
 patches <- list()
 
 patches$patch_id <- 1:n_patches
@@ -34,7 +32,6 @@ patches$bands_id <- list()
 
 
 #create number of bands and band list
-
 bands <- list()
 
 bands$band_id <- 1:n_bands_ini
@@ -44,7 +41,7 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
 
 
 #Loop over timesteps
-#for (j in 1:timesteps){
+for (j in 1:timesteps){
 
       #(Re)calculate n_bands so that it adapts to the increasing/decreasing pop. size
       n_bands <- length(bands$band_id)
@@ -128,26 +125,22 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
       
       
       #Remove dead from bands and birth index
-      #FIX ME - should I also remove these from the death and death_prob vectors? 
       bands$band_id <- bands$band_id[-(death_index)]  
       bands$payoff <- bands$payoff[-(death_index)]
       bands$fitness <- bands$fitness[-(death_index)]  
       bands$patch_id <- bands$patch_id[-(death_index)]
       bands$group_size <- bands$group_size[-(death_index)]
-      #FIX ME - birth_prob won't be necessary once it isn't being stored, just now so it doesn't look confusing 
+      #FIX ME - _prob won't be necessary once it isn't being stored, just now so it doesn't look confusing 
       bands$birth_prob <- bands$birth_prob[-(death_index)]
       bands$birth <- bands$birth[-(death_index)]
+      bands$death_prob <- bands$death_prob[-(death_index)]
+      bands$death <- bands$death[-(death_index)]
       
       
       #Index of bands that are reproducing
       birth_index <- which(bands$birth == 1)
       
-      
-      #Clone band_id, payoff, fitness, patch_id of those bands that are giving birth, assign new band_id though
-      #generate new ids
-      #FIX ME - make function so that "value"(n_bands) updates after each run and then ids are assigned - cumulative id values as if 
-
-      
+      #Generate new id's, n = length of birth_index, i.e. n of new bands, using max id for this
       if(length(birth_index) > 0){
         new_ids <- rep((max(bands$band_id)+1):(max(bands$band_id)+length(birth_index)))
       } else {
@@ -162,13 +155,12 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
       bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
       
       
-      #FIX ME - need to first update patches list with band ID and recalculate groupsizes,  
-#}
+      #FIX ME - need to first update patches list with band ID and recalculate groupsizes, before model goes on to fission fusion  
+}
 
 #TO DO
-#update patches list based on births and deaths
-#above fixes
-#tests on birth death additions
+#look at death probabilities - too high, everything is dying too soon 
+#maybe its the fact that deaths are killing the also reproducing agents - i.e. death process happens before birth 
 
 
 
