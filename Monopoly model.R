@@ -159,8 +159,7 @@ for (j in 1:timesteps){
 }      
 
 #TO DO
-#look at death probabilities - too high, everything is dying too soon 
-#maybe its the fact that deaths are killing the also reproducing agents - i.e. death process happens before birth 
+#unit tests on each section 
 
 
 
