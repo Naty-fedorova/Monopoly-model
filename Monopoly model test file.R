@@ -1,5 +1,7 @@
 
-# for every bug make a unit test
+
+This script has been written to test the integrity of the code so far. The loop has been removed. 
+
 
 #Initialization parameters
 
@@ -76,6 +78,16 @@ for (j in 1:timesteps){
     bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
   }
   
+  # tests
+  # groupsizes should be higher when density is higher (fewer patches, more bands)
+  # payoff should be higher when groupsize is higher, default payoff is higher, and when cooperative benefit is higher - deviation should be the same across conditions
+  # groupsize of 1 should always only receive default payoff(with deviation)
+  # So, in a sparce population, there should be more default payoffs than in a dense one
+  # since there is no density regulation at this stage, higher groupsizes should indefinitely lead to higher payoffs 
+  # when population is sparce (groupssizes = 1) or groupsizes are the same payoffs should be normally distributed
+  
+  #plot distribution of payoffs
+  
   
   #Calculate patch payoff by summing payoff of bands in that patch 
   for (i in 1: n_patches){
@@ -85,10 +97,13 @@ for (j in 1:timesteps){
       #Use the temp vector to index payoff in bands and get the sum of all the payoffs of the bands in that patch
       patches$payoff[i] <- sum(bands$payoff[temp_2]) 
     } else {
-      # if that patch is not occupied, put in an na for payoff
+      # if that patch is not occupied, NA for payoff
       patches$payoff[i] <- NA
     }
   }
+  
+  # tests
+  # basic check that payoff is a multiple of groupsize
   
   
   #Calculate fitness based on density dependence
@@ -100,6 +115,12 @@ for (j in 1:timesteps){
       #Otherwise, band fitness is patch payoff/groupsize
       bands$fitness[i] <- patches$payoff[bands$patch_id[i]]/bands$group_size[i]
     } 
+    
+  # tests
+  # when resources are low, and population dense (few patches, many bands), fitness should be low 
+  # when resources are lower than default payoff, all bands should have resources/groupsize
+  # when resources are very high, all bands should have payoff/groupsize
+  
     
     ###BIRTH AND DEATH PROCESS###
     #FIX ME - for now, storing birth/death prob in bands, but probably don't need to store it (make temp vector) 
@@ -118,6 +139,9 @@ for (j in 1:timesteps){
     bands$death[i] <- rbinom(1, size = 1, prob = bands$death_prob[i])
   }
   
+  # tests
+  # proportion of events should reflect probability of event, i.e. prob of 0.5 should result in half dead half alive  
+  
   #Index of which bands died
   death_index <- which(bands$death == 1)
   
@@ -135,6 +159,9 @@ for (j in 1:timesteps){
     bands$death <- bands$death[-(death_index)]
   } 
   
+  # tests
+  # check correct ids are being removed 
+  
   #Index of bands that are reproducing
   birth_index <- which(bands$birth == 1)
   
@@ -145,6 +172,9 @@ for (j in 1:timesteps){
   } else {
     new_ids <- NULL
   }
+  
+  # tests
+  # check correct ids are being generated
   
   #Appends new ids to band_id, and clone value of reproduced bands for payoff, fitness, and patch_id
   bands$band_id <- append(bands$band_id, new_ids, after = length(bands$band_id)) 
