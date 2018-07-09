@@ -7,7 +7,8 @@
 timesteps <- 10
 
 #it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
-n_patches <- 10
+patch_dim <- 10
+n_patches <- patch_dim^2
 n_bands_ini <- 10
 resources <- 200
 
@@ -20,6 +21,16 @@ sigma <- 1
 rep_rate <- 0.05
 death_par_1 <- 0.8
 death_par_2 <- 5
+
+
+#patches
+
+world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
+
+#pad the matrix - FIX ME - how do I make this into a torus?
+world <- rbind(world, rev(world[(1), ]))
+world <- cbind(world, rev(world[ ,(1)]))
+
 
 
 #patch list
@@ -160,6 +171,8 @@ for (j in 1:timesteps){
 
 #TO DO
 #unit tests on each section 
+
+
 
 
 
