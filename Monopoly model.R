@@ -28,12 +28,10 @@ death_par_2 <- 5
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
 #pad the matrix - FIX ME - how do I make this into a torus?
-
-#FIX ME - can maybe think about this - how could I make it so I just bind the edges?
-world_2 <- rbind(world, world)
-world_3 <- rbind(world, world_2)
-world_6 <- cbind(world_3, world_3)
-world_padded <- cbind(world_6, world_3)
+world_2 <- rbind(world, world[1, ])
+world_3 <- rbind(world[10, ], world_2)
+world_6 <- cbind(world_3, world_3[, 1])
+world_padded <- cbind(world_3[ , 10], world_6)
 
 #create list of id's and their neighbours (for local condition)
 #FIX ME - should I also have a list of neighbours for global condition?
@@ -43,9 +41,9 @@ patch_neighbours <- list()
 patch_neighbours$ID <- 1:100
 patch_neighbours$neighbours <- list()
 
-  for(i in 11:20){
-    for(j in 11:20){
-      patch_neighbours$neighbours[[row, col]] <- c(  world_padded[i-1, j-1] ,
+  for(i in 2:11){
+    for(j in 2:11){
+      patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
                                                     world_padded[i  , j-1] ,
                                                     world_padded[i+1, j-1] ,
                                                     world_padded[i-1, j  ] ,
@@ -59,6 +57,45 @@ patch_neighbours$neighbours <- list()
 
 
 
+###attempt from stack overflow
+
+addresses <- expand.grid(x = 2:11, y = 2:11)
+
+ret<-c()
+for(i in 1:-1){
+  for(j in 1:-1){
+    if(i!=0 || j !=0){
+      ret<-rbind(ret,world_padded[addresses$x+i+1 +nrow(world_padded)*(addresses$y+j)]) 
+    }
+  }
+}
+#im not even sure above is working because it doesnt index properly
+
+
+
+for(k in 1:100){
+for(i in 1:-1){
+  for(j in 1:-1){
+    if(i!=0 || j !=0){
+      patch_neighbours$neighbours[[k]] <- world_padded[addresses$x+i, addresses$y+j]
+    }
+  }
+}
+}  
+
+
+try <- function(mat) {
+  ind <- 2:11 # row/column indices of the "middle"
+  neigh <- rbind(N  = as.vector(world_padded[ind - 1, ind    ]),
+                NE = as.vector(world_padded[ind - 1, ind + 1]),
+                E  = as.vector(world_padded[ind    , ind + 1]),
+                SE = as.vector(world_padded[ind + 1, ind + 1]),
+                S  = as.vector(world_padded[ind + 1, ind    ]),
+                SW = as.vector(world_padded[ind + 1, ind - 1]),
+                W  = as.vector(world_padded[ind    , ind - 1]),
+                NW = as.vector(world_padded[ind - 1, ind - 1]))
+  return(neigh)
+}
 
 
 
