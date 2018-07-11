@@ -28,8 +28,41 @@ death_par_2 <- 5
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
 #pad the matrix - FIX ME - how do I make this into a torus?
-world <- rbind(world, rev(world[(1), ]))
-world <- cbind(world, rev(world[ ,(1)]))
+
+#FIX ME - can maybe think about this - how could I make it so I just bind the edges?
+world_2 <- rbind(world, world)
+world_3 <- rbind(world, world_2)
+world_6 <- cbind(world_3, world_3)
+world_padded <- cbind(world_6, world_3)
+
+#create list of id's and their neighbours (for local condition)
+#FIX ME - should I also have a list of neighbours for global condition?
+
+patch_neighbours <- list()
+
+patch_neighbours$ID <- 1:100
+patch_neighbours$neighbours <- list()
+
+for(i in 1:100){
+  for(row in 11:20){
+    for(col in 11:20){
+      patch_neighbours$neighbours[[i]] <- c( world_padded[row-1, col-1] ,
+                                  world_padded[row  , col-1] ,
+                                  world_padded[row+1, col-1] ,
+                                  world_padded[row-1, col  ] ,
+                                  world_padded[row+1, col  ] ,
+                                  world_padded[row-1, col+1] ,
+                                  world_padded[row  , col+1] ,
+                                  world_padded[row+1, col+1])
+    }
+  }
+}
+
+
+
+
+
+
 
 
 
