@@ -43,20 +43,19 @@ patch_neighbours <- list()
 patch_neighbours$ID <- 1:100
 patch_neighbours$neighbours <- list()
 
-for(i in 1:100){
-  for(row in 11:20){
-    for(col in 11:20){
-      patch_neighbours$neighbours[[i]] <- c( world_padded[row-1, col-1] ,
-                                  world_padded[row  , col-1] ,
-                                  world_padded[row+1, col-1] ,
-                                  world_padded[row-1, col  ] ,
-                                  world_padded[row+1, col  ] ,
-                                  world_padded[row-1, col+1] ,
-                                  world_padded[row  , col+1] ,
-                                  world_padded[row+1, col+1])
+  for(i in 11:20){
+    for(j in 11:20){
+      patch_neighbours$neighbours[[row, col]] <- c(  world_padded[i-1, j-1] ,
+                                                    world_padded[i  , j-1] ,
+                                                    world_padded[i+1, j-1] ,
+                                                    world_padded[i-1, j  ] ,
+                                                    world_padded[i+1, j  ] ,
+                                                    world_padded[i-1, j+1] ,
+                                                    world_padded[i  , j+1] ,
+                                                    world_padded[i+1, j+1])
     }
   }
-}
+
 
 
 
