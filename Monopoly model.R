@@ -41,64 +41,18 @@ patch_neighbours <- list()
 patch_neighbours$ID <- 1:100
 patch_neighbours$neighbours <- list()
 
-  for(i in 2:11){
-    for(j in 2:11){
-      patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
-                                                    world_padded[i  , j-1] ,
-                                                    world_padded[i+1, j-1] ,
-                                                    world_padded[i-1, j  ] ,
-                                                    world_padded[i+1, j  ] ,
-                                                    world_padded[i-1, j+1] ,
-                                                    world_padded[i  , j+1] ,
-                                                    world_padded[i+1, j+1])
-    }
-  }
-
-
-
-
-###attempt from stack overflow
-
-addresses <- expand.grid(x = 2:11, y = 2:11)
-
-ret<-c()
-for(i in 1:-1){
-  for(j in 1:-1){
-    if(i!=0 || j !=0){
-      ret<-rbind(ret,world_padded[addresses$x+i+1 +nrow(world_padded)*(addresses$y+j)]) 
-    }
+for(i in 2:11){
+  for(j in 2:11){
+    patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
+                                                               world_padded[i  , j-1] ,
+                                                               world_padded[i+1, j-1] ,
+                                                               world_padded[i-1, j  ] ,
+                                                               world_padded[i+1, j  ] ,
+                                                               world_padded[i-1, j+1] ,
+                                                               world_padded[i  , j+1] ,
+                                                               world_padded[i+1, j+1])
   }
 }
-#im not even sure above is working because it doesnt index properly
-
-
-
-for(k in 1:100){
-for(i in 1:-1){
-  for(j in 1:-1){
-    if(i!=0 || j !=0){
-      patch_neighbours$neighbours[[k]] <- world_padded[addresses$x+i, addresses$y+j]
-    }
-  }
-}
-}  
-
-
-try <- function(mat) {
-  ind <- 2:11 # row/column indices of the "middle"
-  neigh <- rbind(N  = as.vector(world_padded[ind - 1, ind    ]),
-                NE = as.vector(world_padded[ind - 1, ind + 1]),
-                E  = as.vector(world_padded[ind    , ind + 1]),
-                SE = as.vector(world_padded[ind + 1, ind + 1]),
-                S  = as.vector(world_padded[ind + 1, ind    ]),
-                SW = as.vector(world_padded[ind + 1, ind - 1]),
-                W  = as.vector(world_padded[ind    , ind - 1]),
-                NW = as.vector(world_padded[ind - 1, ind - 1]))
-  return(neigh)
-}
-
-
-
 
 
 
