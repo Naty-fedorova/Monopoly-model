@@ -1,5 +1,4 @@
-
-# for every bug make a unit test
+#THE MONOPOLY MODEL
 
 #Initialization parameters
 
@@ -33,7 +32,6 @@ prop_sample <- 0.5
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
 #pad the matrix 
-#FIX ME - problem remains when putting the last row with in flexibly with range - because - or + does not work in the range = 1 condition
 world_2 <- rbind(world, world[1:space_range, ])
 world_3 <- rbind(world[(patch_dim-(space_range-1)):patch_dim, ], world_2)
 world_6 <- cbind(world_3, world_3[, 1:space_range])
@@ -48,17 +46,18 @@ patch_neighbours <- list()
 patch_neighbours$patch_id <- 1:n_patches
 patch_neighbours$neighbours <- list()
 
-for(i in 2:(patch_dim+1)){
-  for(j in 2:(patch_dim+1)){
+#FIX ME - need to put in flexible coordinates in loop specification so it responds to changes to space_range - only does immediately vicinity as is
+for(i in (space_range+1):(patch_dim+space_range)){
+  for(j in (space_range+1):(patch_dim+space_range)){
     #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
-    patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
-                                                               world_padded[i  , j-1] ,
-                                                               world_padded[i+1, j-1] ,
-                                                               world_padded[i-1, j  ] ,
-                                                               world_padded[i+1, j  ] ,
-                                                               world_padded[i-1, j+1] ,
-                                                               world_padded[i  , j+1] ,
-                                                               world_padded[i+1, j+1])
+    patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[(i-space_range), (j-space_range)] ,
+                                                               world_padded[(i), (j-space_range)] ,
+                                                               world_padded[(i+space_range), (j-space_range)] ,
+                                                               world_padded[(i-space_range), (j)] ,
+                                                               world_padded[(i+space_range), (j)] ,
+                                                               world_padded[(i-space_range), (j+space_range)] ,
+                                                               world_padded[(i), (j+space_range)] ,
+                                                               world_padded[(i+space_range), (j+space_range)])
   }
 }
 
@@ -223,6 +222,12 @@ loop_results <- list()
         
         #compare to model
         
+        #Decision tree
+        if(bands$group_size[i] > 1){
+          
+        } else{
+          
+        }
         
       }
       
