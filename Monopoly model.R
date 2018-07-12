@@ -24,25 +24,25 @@ death_par_2 <- 5
 
 
 #patches
-
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
-#pad the matrix - FIX ME - how do I make this into a torus?
+#pad the matrix 
 world_2 <- rbind(world, world[1, ])
-world_3 <- rbind(world[10, ], world_2)
+world_3 <- rbind(world[patch_dim, ], world_2)
 world_6 <- cbind(world_3, world_3[, 1])
-world_padded <- cbind(world_3[ , 10], world_6)
+world_padded <- cbind(world_3[ , patch_dim], world_6)
 
 #create list of id's and their neighbours (for local condition)
 #FIX ME - should I also have a list of neighbours for global condition?
 
 patch_neighbours <- list()
 
-patch_neighbours$ID <- 1:100
+patch_neighbours$patch_id <- 1:n_patches
 patch_neighbours$neighbours <- list()
 
-for(i in 2:11){
-  for(j in 2:11){
+for(i in 2:patch_dim+1){
+  for(j in 2:patch_dim+1){
+    #this find neighbours in a radius of one patch
     patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
                                                                world_padded[i  , j-1] ,
                                                                world_padded[i+1, j-1] ,
@@ -57,7 +57,7 @@ for(i in 2:11){
 
 
 #patch list
-#might actually want to have patch ID based on actual coordinates
+#FIX ME - should patch id be based on coordinates or directly related to world? 
 patches <- list()
 
 patches$patch_id <- 1:n_patches
@@ -77,7 +77,7 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
 loop_results <- list()
 
 
-
+#############################################################################################################################################################MODEL
 
 
 #Loop over timesteps
