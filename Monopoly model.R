@@ -7,7 +7,7 @@
 timesteps <- 10
 
 #it would be better if patches were coordinates pulled from a space - and then summed to get n_patches
-patch_dim <- 10
+patch_dim <- 4
 n_patches <- patch_dim^2
 n_bands_ini <- 10
 resources <- 200
@@ -37,12 +37,13 @@ world_padded <- cbind(world_3[ , patch_dim], world_6)
 
 patch_neighbours <- list()
 
+#FIX ME - I probably don't actually need this patch_id thing
 patch_neighbours$patch_id <- 1:n_patches
 patch_neighbours$neighbours <- list()
 
-for(i in 2:patch_dim+1){
-  for(j in 2:patch_dim+1){
-    #this find neighbours in a radius of one patch
+for(i in 2:(patch_dim+1)){
+  for(j in 2:(patch_dim+1)){
+    #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
     patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[i-1, j-1] ,
                                                                world_padded[i  , j-1] ,
                                                                world_padded[i+1, j-1] ,
@@ -81,7 +82,7 @@ loop_results <- list()
 
 
 #Loop over timesteps
-for (j in 1:timesteps){
+#for (j in 1:timesteps){
 
       #(Re)calculate n_bands so that it adapts to the increasing/decreasing pop. size
       n_bands <- length(bands$band_id)
@@ -186,14 +187,43 @@ for (j in 1:timesteps){
       bands$fitness <- append(bands$fitness, bands$fitness[birth_index])
       bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
       
-      #FIX ME - need to first update patches list with band ID and recalculate groupsizes, before model goes on to fission fusion
+      #Update band ids in patches list and update groupsize 
+      
+      #Add bands ID to patches list
+      for (i in 1:n_patches){
+        #Temporary vector that stores index of which patch_id is the same as i
+        temp <- which(bands$patch_id == i)
+        if (length(temp) == 0) {
+          patches$bands_id[[i]] <- NA
+        } else {
+          #If the temp vector actually includes something, it is used to index band_id and put it into the patches list
+          patches$bands_id[[i]] <- bands$band_id[temp]
+        }
+      }
+      
+      #Groupsize and payoff calculation 
+      for(i in 1:length(bands$band_id)){
+        # calculate groupsizes for each agent by indexing band id's in patches by patch ids in bands and getting the length of that (since its a vector, kinda)  
+        bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
+      }
+      
+      
       
       #Store temp loop output
       loop_results[[j]] <- patches$bands_id 
-}      
+#}      
+      
+      
+      ###FISSION FUSION###
+      
+      
+      
 
 #TO DO
-#unit tests on each section 
+#finish test file
+#make list with all fission-fusion options
+#code if statements for fission fusion options  
+#keep both local and global options in mind
 
 
 
