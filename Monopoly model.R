@@ -22,15 +22,22 @@ rep_rate <- 0.05
 death_par_1 <- 0.8
 death_par_2 <- 5
 
+#Fission fusion parameters
+space_range <- 3
+decision_prob <- 0.5
+threshold <- 3
+prop_sample <- 0.5
+
 
 #patches
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
 #pad the matrix 
-world_2 <- rbind(world, world[1, ])
-world_3 <- rbind(world[patch_dim, ], world_2)
-world_6 <- cbind(world_3, world_3[, 1])
-world_padded <- cbind(world_3[ , patch_dim], world_6)
+#FIX ME - problem remains when putting the last row with in flexibly with range - because - or + does not work in the range = 1 condition
+world_2 <- rbind(world, world[1:space_range, ])
+world_3 <- rbind(world[(patch_dim-(space_range-1)):patch_dim, ], world_2)
+world_6 <- cbind(world_3, world_3[, 1:space_range])
+world_padded <- cbind(world_3[ , (patch_dim-(space_range-1)):patch_dim], world_6)
 
 #create list of id's and their neighbours (for local condition)
 #FIX ME - should I also have a list of neighbours for global condition?
@@ -207,7 +214,17 @@ loop_results <- list()
         bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
       }
       
+      ###FISSION FUSION###
       
+      for(i in 1:length(bands$bands_id)){
+        
+        #find a model
+        
+        
+        #compare to model
+        
+        
+      }
       
       #Store temp loop output
       loop_results[[j]] <- patches$bands_id 
