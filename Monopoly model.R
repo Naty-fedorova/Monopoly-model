@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 3
+space_range <- 1
 decision_prob <- 0.5
 threshold <- 3
 prop_sample <- 0.5
@@ -223,20 +223,70 @@ loop_results <- list()
         #compare to model
         
         #Decision tree
-        if(bands$group_size[i] > 1){
-          
-        } else{
-          
+        #FIX ME - at the moment I'm not nesting the if statemements, but would be good to discuss pros/cons of that
+        
+        #Do nothing conditions
+        if(bands$group_size[i]=1 & model_groupsize=NULL){
+          bands$patch_id[i] <- bands$patch_id
+        }
+        if(bands$group_size[i]=1 & model_groupsize=1 & bands$fitness[i]>=model_fitness){
+          bands$patch_id[i] <- bands$patch_id
+        }
+        if(bands$group_size[i]>1 & model_groupsize>1 & bands$fitness[i]>=model_fitness & bands$fitness[i]>=payoff_default-threshold){
+          bands$patch_id[i] <- bands$patch_id
         }
         
-      }
+        #Fission conditions (move to empty patch)
+        if(bands$group_size[i]>1 & model_groupsize>1 & bands$fitness[1]<=payoff_default-threshold & model_fitness<=payoff_default-threshold){
+          #move to empty patch in neighbourhood
+          which(neighbour groupsize == 0)
+          bands$patch_id[i] <- randomly choose from (patch_id[above index])
+        } else{
+          bands$patch_id[i] <- bands$patch_id
+        }
+        if(bands$group_size[i]>1 & model_groupsize=1 & bands$fitness[i]<=model_fitness-threshold & bands$fitness[i]<=payoff_default-threshold){
+          which(neighbour groupsize == 0)
+          bands$patch_id[i] <- randomly choose from (patch_id[above index])
+        } else{
+          bands$patch_id[i] <- bands$patch_id
+        }
+        if(bands$group_size[i]>1 & model_groupsize=NULL & bands$fitness[i]<=payoff_default-threshold){
+          which(neighbour groupsize == 0)
+          bands$patch_id[i] <- randomly choose from (patch_id[above index])
+        } else{
+          bands$patch_id[i] <- bands$patch_id
+        }
+        
+        #Migration conditions (join another group)
+        if((bands$group_size[i]>1 & model_groupsize>1 & model_fitness>payoff_default-threshold) & bands$fitness[i] <= payoff_default-threshold | bands$fitness[i]<=model_fitness-threshold){
+          bands$patch_id[i] <- model_patch_id
+        } else{
+          bands$patch_id[i] <- bands$patch_id
+        }
+        
+        #Fusion conditions (join group after being alone)
+        if(bands$group_size[i]=1 & model_groupsize>1 & bands$fitness[i]<= model_fitness-threshold{
+          bands$patch_id[i] <- model_patch_id
+        } else{
+          bands$patch_id[i] <- bands$patch_id
+        }
+        
+        #Fussion conditions (group formation)
+        if(bands$group_size[i]=1 & model_groupsize=1 & bands$fitness[i]<payoff_default & model_fitness<payoff_default){
+          #find empty path
+          #both models move there
+          #FIX ME - this one is a bit tricky because this is considered a move by both agents, and thus the model agents no longer gets a turn this round
+          bands$patch_id[i] <- #new patch
+          model_patch <- #new patch
+        }
+          
       
       #Store temp loop output
       loop_results[[j]] <- patches$bands_id 
 #}      
       
       
-      ###FISSION FUSION###
+
       
       
       
