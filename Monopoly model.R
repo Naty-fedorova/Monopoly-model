@@ -222,7 +222,7 @@ loop_results <- list()
       
       #FIX ME - below happens with a probability of decision_prob
       
-      for(i in 1:length(bands$bands_id)){
+      for(i in 1:length(bands$band_id)){
         #FIX ME - one thing I don't understand is how model groupsize can be null - are you selecting patches then?
         
         #Get index of the neighbours of agent i
@@ -250,10 +250,10 @@ loop_results <- list()
         
         #Do nothing conditions
         #FIX ME - don't understand this null condition
-        if(bands$group_size[i]=1 & bands$group_size[model]=NULL){
+        if(bands$group_size[i]==1 & is.null(bands$group_size[model])==TRUE){
           bands$patch_id[i] <- bands$patch_id[model]
         }
-        if(bands$group_size[i]=1 & bands$group_size[model]=1 & bands$fitness[i]>=bands$fitness[model]){
+        if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]>=bands$fitness[model]){
           bands$patch_id[i] <- bands$patch_id[model]
         }
         if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[i]>=bands$fitness[model] & bands$fitness[i]>=payoff_default-threshold){
@@ -270,13 +270,13 @@ loop_results <- list()
           
         } 
   
-        if(bands$group_size[i]>1 & bands$group_size[model]=1 & bands$fitness[i]<=bands$fitness[model]-threshold & bands$fitness[i]<=payoff_default-threshold){
+        if(bands$group_size[i]>1 & bands$group_size[model]==1 & bands$fitness[i]<=bands$fitness[model]-threshold & bands$fitness[i]<=payoff_default-threshold){
           #find empty patches and randomly select one to move to 
           bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
         } 
         
         
-        if(bands$group_size[i]>1 & bands$group_size[model]=NULL & bands$fitness[i]<=payoff_default-threshold){
+        if(bands$group_size[i]>1 & is.null(bands$group_size[model])==TRUE & bands$fitness[i]<=payoff_default-threshold){
           #find empty patches and randomly select one to move to 
           bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
         } 
@@ -287,13 +287,13 @@ loop_results <- list()
         } 
         
         #Fusion conditions (join group after being alone)
-        if(bands$group_size[i]=1 & bands$group_size[model]>1 & bands$fitness[i]<= bands$fitness[model]-threshold){
+        if(bands$group_size[i]==1 & bands$group_size[model]>1 & bands$fitness[i]<= bands$fitness[model]-threshold){
           bands$patch_id[i] <- bands$patch_id[model]
         } 
         
         #Fussion conditions (group formation)
         #FIX ME - need to figure out how to then count this as a move for the model as well
-        if(bands$group_size[i]=1 & model_groupsize=1 & bands$fitness[i]<payoff_default & model_fitness<payoff_default){
+        if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]<payoff_default & bands$fitness[model]<payoff_default){
           
           #find empty patches and randomly select one, assign to new variable new_patch
           new_patch <- sample(neigh_ind[which(is.na(set))], 1)
@@ -302,6 +302,7 @@ loop_results <- list()
           bands$patch_id[i] <- new_patch
           bands$patch_id[model] <- new_patch
         }
+      }
           
       
       #Store temp loop output
