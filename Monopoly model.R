@@ -25,7 +25,7 @@ death_par_2 <- 5
 space_range <- 1
 decision_prob <- 0.5
 threshold <- 3
-prop_sample <- 0.5
+prop_sample <- 1
 
 
 #patches
@@ -37,31 +37,36 @@ world_3 <- rbind(world[(patch_dim-(space_range-1)):patch_dim, ], world_2)
 world_6 <- cbind(world_3, world_3[, 1:space_range])
 world_padded <- cbind(world_3[ , (patch_dim-(space_range-1)):patch_dim], world_6)
 
-#create list of id's and their neighbours (for local condition)
-#FIX ME - should I also have a list of neighbours for global condition?
 
-patch_neighbours <- list()
 
-#FIX ME - I probably don't actually need this patch_id thing
-patch_neighbours$patch_id <- 1:n_patches
-patch_neighbours$neighbours <- list()
-
-#FIX ME - need to put in flexible coordinates in loop specification so it responds to changes to space_range - only does immediately vicinity as is
-for(i in (space_range+1):(patch_dim+space_range)){
-  for(j in (space_range+1):(patch_dim+space_range)){
-    #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
-    patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[(i-space_range), (j-space_range)] ,
-                                                               world_padded[(i), (j-space_range)] ,
-                                                               world_padded[(i+space_range), (j-space_range)] ,
-                                                               world_padded[(i-space_range), (j)] ,
-                                                               world_padded[(i+space_range), (j)] ,
-                                                               world_padded[(i-space_range), (j+space_range)] ,
-                                                               world_padded[(i), (j+space_range)] ,
-                                                               world_padded[(i+space_range), (j+space_range)])
+#set global condition
+if(space_range < n_patches){
+  
+  #create list of id's and their neighbours (for local condition)
+  #FIX ME - should I also have a list of neighbours for global condition?
+  
+  patch_neighbours <- list()
+  
+  #FIX ME - I probably don't actually need this patch_id thing
+  patch_neighbours$patch_id <- 1:n_patches
+  patch_neighbours$neighbours <- list()  
+  
+  #FIX ME - need to put in flexible coordinates in loop specification so it responds to changes to space_range - only does immediately vicinity as is
+  for(i in (space_range+1):(patch_dim+space_range)){
+    for(j in (space_range+1):(patch_dim+space_range)){
+      #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
+      patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[(i-space_range), (j-space_range)] ,
+                                                                 world_padded[(i), (j-space_range)] ,
+                                                                 world_padded[(i+space_range), (j-space_range)] ,
+                                                                 world_padded[(i-space_range), (j)] ,
+                                                                 world_padded[(i+space_range), (j)] ,
+                                                                 world_padded[(i-space_range), (j+space_range)] ,
+                                                                 world_padded[(i), (j+space_range)] ,
+                                                                 world_padded[(i+space_range), (j+space_range)])
+    }
   }
-}
-
-
+  
+} 
 
 #patch list
 #FIX ME - should patch id be based on coordinates or directly related to world? 
@@ -215,69 +220,87 @@ loop_results <- list()
       
       ###FISSION FUSION###
       
+      #FIX ME - below happens with a probability of decision_prob
+      
       for(i in 1:length(bands$bands_id)){
+        #FIX ME - one thing I don't understand is how model groupsize can be null - are you selecting patches then?
         
-        #find a model
+        #Get index of the neighbours of agent i
+        neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
+        
+        #Get index of bands that are present in those neighboring patches
+        #Don't forget that set below is filled with INDEXES, not agent IDs
+        set <- match(neigh_ind, bands$patch_id)
+        
+        set_pos <- set[!is.na(set)]
+        
+        #Select subset prop_sample from that
+        #FIX ME - what do I do with odd numbers here? 
+        sample_model_ind <- sample(set_pos, size = (prop_sample * length(set_pos)))
+        
+        #fittest agent
+        model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
         
         
         #compare to model
         
         #Decision tree
         #FIX ME - at the moment I'm not nesting the if statemements, but would be good to discuss pros/cons of that
+        #seems like nesting will be required so that each agent doesn't have to go through all the conditions before moving 
         
         #Do nothing conditions
-        if(bands$group_size[i]=1 & model_groupsize=NULL){
-          bands$patch_id[i] <- bands$patch_id
+        #FIX ME - don't understand this null condition
+        if(bands$group_size[i]=1 & bands$group_size[model]=NULL){
+          bands$patch_id[i] <- bands$patch_id[model]
         }
-        if(bands$group_size[i]=1 & model_groupsize=1 & bands$fitness[i]>=model_fitness){
-          bands$patch_id[i] <- bands$patch_id
+        if(bands$group_size[i]=1 & bands$group_size[model]=1 & bands$fitness[i]>=bands$fitness[model]){
+          bands$patch_id[i] <- bands$patch_id[model]
         }
-        if(bands$group_size[i]>1 & model_groupsize>1 & bands$fitness[i]>=model_fitness & bands$fitness[i]>=payoff_default-threshold){
-          bands$patch_id[i] <- bands$patch_id
+        if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[i]>=bands$fitness[model] & bands$fitness[i]>=payoff_default-threshold){
+          bands$patch_id[i] <- bands$patch_id[model]
         }
         
         #Fission conditions (move to empty patch)
-        if(bands$group_size[i]>1 & model_groupsize>1 & bands$fitness[1]<=payoff_default-threshold & model_fitness<=payoff_default-threshold){
+        if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[1]<=payoff_default-threshold & bands$fitness[model]<=payoff_default-threshold){
           #move to empty patch in neighbourhood
-          which(neighbour groupsize == 0)
-          bands$patch_id[i] <- randomly choose from (patch_id[above index])
-        } else{
-          bands$patch_id[i] <- bands$patch_id
-        }
-        if(bands$group_size[i]>1 & model_groupsize=1 & bands$fitness[i]<=model_fitness-threshold & bands$fitness[i]<=payoff_default-threshold){
-          which(neighbour groupsize == 0)
-          bands$patch_id[i] <- randomly choose from (patch_id[above index])
-        } else{
-          bands$patch_id[i] <- bands$patch_id
-        }
-        if(bands$group_size[i]>1 & model_groupsize=NULL & bands$fitness[i]<=payoff_default-threshold){
-          which(neighbour groupsize == 0)
-          bands$patch_id[i] <- randomly choose from (patch_id[above index])
-        } else{
-          bands$patch_id[i] <- bands$patch_id
-        }
+          #FIX ME - how I do this depends on what is done above with the neighbour index
+          
+          #find empty patches and randomly select one to move to 
+          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+          
+        } 
+  
+        if(bands$group_size[i]>1 & bands$group_size[model]=1 & bands$fitness[i]<=bands$fitness[model]-threshold & bands$fitness[i]<=payoff_default-threshold){
+          #find empty patches and randomly select one to move to 
+          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+        } 
         
-        #Migration conditions (join another group)
-        if((bands$group_size[i]>1 & model_groupsize>1 & model_fitness>payoff_default-threshold) & bands$fitness[i] <= payoff_default-threshold | bands$fitness[i]<=model_fitness-threshold){
-          bands$patch_id[i] <- model_patch_id
-        } else{
-          bands$patch_id[i] <- bands$patch_id
-        }
+        
+        if(bands$group_size[i]>1 & bands$group_size[model]=NULL & bands$fitness[i]<=payoff_default-threshold){
+          #find empty patches and randomly select one to move to 
+          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+        } 
+        
+        #Migration conditions (join model's group)
+        if((bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[model]>payoff_default-threshold) & bands$fitness[i] <= payoff_default-threshold | bands$fitness[i]<=bands$fitness[model]-threshold){
+          bands$patch_id[i] <- bands$patch_id[model]
+        } 
         
         #Fusion conditions (join group after being alone)
-        if(bands$group_size[i]=1 & model_groupsize>1 & bands$fitness[i]<= model_fitness-threshold{
-          bands$patch_id[i] <- model_patch_id
-        } else{
-          bands$patch_id[i] <- bands$patch_id
-        }
+        if(bands$group_size[i]=1 & bands$group_size[model]>1 & bands$fitness[i]<= bands$fitness[model]-threshold){
+          bands$patch_id[i] <- bands$patch_id[model]
+        } 
         
         #Fussion conditions (group formation)
+        #FIX ME - need to figure out how to then count this as a move for the model as well
         if(bands$group_size[i]=1 & model_groupsize=1 & bands$fitness[i]<payoff_default & model_fitness<payoff_default){
-          #find empty path
-          #both models move there
-          #FIX ME - this one is a bit tricky because this is considered a move by both agents, and thus the model agents no longer gets a turn this round
-          bands$patch_id[i] <- #new patch
-          model_patch <- #new patch
+          
+          #find empty patches and randomly select one, assign to new variable new_patch
+          new_patch <- sample(neigh_ind[which(is.na(set))], 1)
+          
+          #assign new patch as the patch for both the agent i and the model
+          bands$patch_id[i] <- new_patch
+          bands$patch_id[model] <- new_patch
         }
           
       
