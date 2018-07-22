@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 3
+space_range <- 2
 decision_prob <- 0.5
 threshold <- 3
 prop_sample <- 0.5
@@ -44,22 +44,24 @@ patch_neighbours <- list()
 
 #FIX ME - I probably don't actually need this patch_id thing
 patch_neighbours$patch_id <- 1:n_patches
-patch_neighbours$neighbours <- list()
 
-#FIX ME - need to put in flexible coordinates in loop specification so it responds to changes to space_range - only does immediately vicinity as is
+patch_neighbours$neighbours <- vector("list", n_patches)
+
+#better way?
+#FIX ME - below works for different values of space range to get the outer neighbour set - but for small world's leads to duplicates that need to be removed
+
 for(i in (space_range+1):(patch_dim+space_range)){
   for(j in (space_range+1):(patch_dim+space_range)){
-    #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
-    patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[(i-space_range), (j-space_range)] ,
-                                                               world_padded[(i), (j-space_range)] ,
-                                                               world_padded[(i+space_range), (j-space_range)] ,
-                                                               world_padded[(i-space_range), (j)] ,
-                                                               world_padded[(i+space_range), (j)] ,
-                                                               world_padded[(i-space_range), (j+space_range)] ,
-                                                               world_padded[(i), (j+space_range)] ,
-                                                               world_padded[(i+space_range), (j+space_range)])
+    for(x in -(space_range):space_range){
+      for(y in -(space_range):space_range){
+        if(x != 0 || y != 0){
+          patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y])
+        }
+      }
+    }
   }
 }
+
 
 
 
