@@ -24,7 +24,7 @@ death_par_2 <- 5
 #Fission fusion parameters
 space_range <- 1
 decision_prob <- 0.5
-threshold <- 3
+threshold <- 0
 prop_sample <- 1
 
 
@@ -231,7 +231,6 @@ loop_results <- list()
         #Get index of bands that are present in those neighboring patches
         #Don't forget that set below is filled with INDEXES, not agent IDs
         set <- match(neigh_ind, bands$patch_id)
-        
         set_pos <- set[!is.na(set)]
         
         #Select subset prop_sample from that
@@ -241,8 +240,7 @@ loop_results <- list()
         #fittest agent
         model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
         
-        
-        #compare to model
+
         
         #Decision tree
         #FIX ME - at the moment I'm not nesting the if statemements, but would be good to discuss pros/cons of that
@@ -303,6 +301,11 @@ loop_results <- list()
           bands$patch_id[model] <- new_patch
         }
       }
+      
+      
+
+      
+      
           
       
       #Store temp loop output
@@ -317,9 +320,9 @@ loop_results <- list()
 
 #TO DO
 #finish test file
-#make list with all fission-fusion options
-#code if statements for fission fusion options  
 #keep both local and global options in mind
+#need to log each movement in the for loop going through the agents to see what is actually happening 
+#write fission fusion conditions out nested       
 
 
 
