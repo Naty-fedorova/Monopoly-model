@@ -37,36 +37,41 @@ world_3 <- rbind(world[(patch_dim-(space_range-1)):patch_dim, ], world_2)
 world_6 <- cbind(world_3, world_3[, 1:space_range])
 world_padded <- cbind(world_3[ , (patch_dim-(space_range-1)):patch_dim], world_6)
 
-
-
 #set global condition
-if(space_range < n_patches){
-  
-  #create list of id's and their neighbours (for local condition)
-  #FIX ME - should I also have a list of neighbours for global condition?
-  
-  patch_neighbours <- list()
-  
-  #FIX ME - I probably don't actually need this patch_id thing
-  patch_neighbours$patch_id <- 1:n_patches
-  patch_neighbours$neighbours <- list()  
-  
-  #FIX ME - need to put in flexible coordinates in loop specification so it responds to changes to space_range - only does immediately vicinity as is
-  for(i in (space_range+1):(patch_dim+space_range)){
-    for(j in (space_range+1):(patch_dim+space_range)){
-      #this find neighbours in a radius of one patch (wider radius would require a change in padding too)
-      patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c(  world_padded[(i-space_range), (j-space_range)] ,
-                                                                 world_padded[(i), (j-space_range)] ,
-                                                                 world_padded[(i+space_range), (j-space_range)] ,
-                                                                 world_padded[(i-space_range), (j)] ,
-                                                                 world_padded[(i+space_range), (j)] ,
-                                                                 world_padded[(i-space_range), (j+space_range)] ,
-                                                                 world_padded[(i), (j+space_range)] ,
-                                                                 world_padded[(i+space_range), (j+space_range)])
+if(space_range < n_patches){}
+
+#create list of id's and their neighbours (for local condition)
+#FIX ME - should I also have a list of neighbours for global condition?
+
+#create list of id's and their neighbours (for local condition)
+#FIX ME - should I also have a list of neighbours for global condition?
+
+patch_neighbours <- list()
+
+#FIX ME - I probably don't actually need this patch_id thing
+patch_neighbours$patch_id <- 1:n_patches
+
+patch_neighbours$neighbours <- vector("list", n_patches)
+
+#better way?
+#FIX ME - below works for different values of space range to get the outer neighbour set - but for small world's leads to duplicates that need to be removed
+
+for(i in (space_range+1):(patch_dim+space_range)){
+  for(j in (space_range+1):(patch_dim+space_range)){
+    for(x in -(space_range):space_range){
+      for(y in -(space_range):space_range){
+        if(x != 0 || y != 0){
+          patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y])
+        }
+      }
     }
   }
+}
+
+
+
+
   
-} 
 
 #patch list
 #FIX ME - should patch id be based on coordinates or directly related to world? 
