@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 1
+space_range <- 17
 decision_prob <- 0.5
 threshold <- 0
 prop_sample <- 1
@@ -38,42 +38,32 @@ world_6 <- cbind(world_3, world_3[, 1:space_range])
 world_padded <- cbind(world_3[ , (patch_dim-(space_range-1)):patch_dim], world_6)
 
 #set global condition
-if(space_range < n_patches){}
-
-#create list of id's and their neighbours (for local condition)
-#FIX ME - should I also have a list of neighbours for global condition?
-
-#create list of id's and their neighbours (for local condition)
-#FIX ME - should I also have a list of neighbours for global condition?
-
-patch_neighbours <- list()
-
-#FIX ME - I probably don't actually need this patch_id thing
-patch_neighbours$patch_id <- 1:n_patches
-
-patch_neighbours$neighbours <- vector("list", n_patches)
-
-#better way?
-#FIX ME - below works for different values of space range to get the outer neighbour set - but for small world's leads to duplicates that need to be removed
-
-for(i in (space_range+1):(patch_dim+space_range)){
-  for(j in (space_range+1):(patch_dim+space_range)){
-    for(x in -(space_range):space_range){
-      for(y in -(space_range):space_range){
-        if(x != 0 || y != 0){
-          patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y])
+if(space_range < n_patches){
+  
+  #create list of id's and their neighbours (for local condition)
+  patch_neighbours <- list()
+  
+  #FIX ME - I probably don't actually need this patch_id thing
+  patch_neighbours$patch_id <- 1:n_patches
+  
+  #Initialize n_patches number of lists within neighbours
+  patch_neighbours$neighbours <- vector("list", n_patches)
+  
+  #FIX ME - below works for different values of space range to get the outer neighbour set - but for small world's leads to duplicates that need to be removed
+  for(i in (space_range+1):(patch_dim+space_range)){
+    for(j in (space_range+1):(patch_dim+space_range)){
+      for(x in -(space_range):space_range){
+        for(y in -(space_range):space_range){
+          if(x != 0 || y != 0){
+            patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y])
+          }
         }
       }
     }
   }
 }
 
-
-
-
-  
-
-#patch list
+#Patch list
 #FIX ME - should patch id be based on coordinates or directly related to world? 
 patches <- list()
 
@@ -82,7 +72,7 @@ patches$resources <- rep(resources, n_patches)
 patches$bands_id <- list()
 
 
-#create number of bands and band list
+#Create number of bands and band list
 bands <- list()
 
 bands$band_id <- 1:n_bands_ini
@@ -141,7 +131,6 @@ loop_results <- list()
             }
       }
         
-
       #Calculate fitness based on density dependence
       for (i in 1: length(bands$band_id)){
             #If patch payoff is more than patch resources, band fitness is resources/groupsize
@@ -225,93 +214,93 @@ loop_results <- list()
       
       ###FISSION FUSION###
       
-      #FIX ME - below happens with a probability of decision_prob
+       
       
       for(i in 1:length(bands$band_id)){
-        #FIX ME - one thing I don't understand is how model groupsize can be null - are you selecting patches then?
         
-        #Get index of the neighbours of agent i
-        neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
-        
-        #Get index of bands that are present in those neighboring patches
-        #Don't forget that set below is filled with INDEXES, not agent IDs
-        set <- match(neigh_ind, bands$patch_id)
-        set_pos <- set[!is.na(set)]
-        
-        #Select subset prop_sample from that
-        #FIX ME - what do I do with odd numbers here? 
-        sample_model_ind <- sample(set_pos, size = (prop_sample * length(set_pos)))
-        
-        #fittest agent
-        model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
-        
-
-        
-        #Decision tree
-        #FIX ME - at the moment I'm not nesting the if statemements, but would be good to discuss pros/cons of that
-        #seems like nesting will be required so that each agent doesn't have to go through all the conditions before moving 
-        
-        #Do nothing conditions
-        #FIX ME - don't understand this null condition
-        if(bands$group_size[i]==1 & is.null(bands$group_size[model])==TRUE){
-          bands$patch_id[i] <- bands$patch_id[model]
-        }
-        if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]>=bands$fitness[model]){
-          bands$patch_id[i] <- bands$patch_id[model]
-        }
-        if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[i]>=bands$fitness[model] & bands$fitness[i]>=payoff_default-threshold){
-          bands$patch_id[i] <- bands$patch_id[model]
-        }
-        
-        #Fission conditions (move to empty patch)
-        if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[1]<=payoff_default-threshold & bands$fitness[model]<=payoff_default-threshold){
-          #move to empty patch in neighbourhood
-          #FIX ME - how I do this depends on what is done above with the neighbour index
+        #Fission fusion happens with probability decision_prob for each agent
+        if((rbinom(1,1, decision_prob))==1){
           
-          #find empty patches and randomly select one to move to 
-          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+          #Get index of the neighbours of agent i
+          neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
           
-        } 
-  
-        if(bands$group_size[i]>1 & bands$group_size[model]==1 & bands$fitness[i]<=bands$fitness[model]-threshold & bands$fitness[i]<=payoff_default-threshold){
-          #find empty patches and randomly select one to move to 
-          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
-        } 
-        
-        
-        if(bands$group_size[i]>1 & is.null(bands$group_size[model])==TRUE & bands$fitness[i]<=payoff_default-threshold){
-          #find empty patches and randomly select one to move to 
-          bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
-        } 
-        
-        #Migration conditions (join model's group)
-        if((bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[model]>payoff_default-threshold) & bands$fitness[i] <= payoff_default-threshold | bands$fitness[i]<=bands$fitness[model]-threshold){
-          bands$patch_id[i] <- bands$patch_id[model]
-        } 
-        
-        #Fusion conditions (join group after being alone)
-        if(bands$group_size[i]==1 & bands$group_size[model]>1 & bands$fitness[i]<= bands$fitness[model]-threshold){
-          bands$patch_id[i] <- bands$patch_id[model]
-        } 
-        
-        #Fussion conditions (group formation)
-        #FIX ME - need to figure out how to then count this as a move for the model as well
-        if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]<payoff_default & bands$fitness[model]<payoff_default){
+          #Get index of bands that are present in those neighboring patches
+          #Don't forget that set below is filled with INDEXES, not agent IDs
+          set <- match(neigh_ind, bands$patch_id)
+          set_pos <- set[!is.na(set)]
           
-          #find empty patches and randomly select one, assign to new variable new_patch
-          new_patch <- sample(neigh_ind[which(is.na(set))], 1)
+          #Select subset prop_sample from that
+          #FIX ME - what do I do with odd numbers here i.e. when the proportion is not a whole number? 
+          sample_model_ind <- sample(set_pos, size = (prop_sample * length(set_pos)))
           
-          #assign new patch as the patch for both the agent i and the model
-          bands$patch_id[i] <- new_patch
-          bands$patch_id[model] <- new_patch
+          #fittest agent
+          model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
+          
+          
+          
+          #Decision tree
+          #FIX ME - at the moment I'm not nesting the if statemements, but would be good to discuss pros/cons of that
+          #seems like nesting will be required so that each agent doesn't have to go through all the conditions before moving 
+          
+          #FIX ME - after a few iterations the loop decision tree breaks with an error
+          
+          #Do nothing conditions
+          #FIX ME - don't understand this null condition
+          if(bands$group_size[i]==1 & is.null(bands$group_size[model])==TRUE){
+            bands$patch_id[i] <- bands$patch_id[model]
+          }
+          if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]>=bands$fitness[model]){
+            bands$patch_id[i] <- bands$patch_id[model]
+          }
+          if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[i]>=bands$fitness[model] & bands$fitness[i]>=payoff_default-threshold){
+            bands$patch_id[i] <- bands$patch_id[model]
+          }
+          
+          #Fission conditions (move to empty patch)
+          if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[1]<=payoff_default-threshold & bands$fitness[model]<=payoff_default-threshold){
+            #move to empty patch in neighbourhood
+            #FIX ME - how I do this depends on what is done above with the neighbour index
+            
+            #find empty patches and randomly select one to move to 
+            bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+            
+          } 
+          
+          if(bands$group_size[i]>1 & bands$group_size[model]==1 & bands$fitness[i]<=bands$fitness[model]-threshold & bands$fitness[i]<=payoff_default-threshold){
+            #find empty patches and randomly select one to move to 
+            bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+          } 
+          
+          
+          if(bands$group_size[i]>1 & is.null(bands$group_size[model])==TRUE & bands$fitness[i]<=payoff_default-threshold){
+            #find empty patches and randomly select one to move to 
+            bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+          } 
+          
+          #Migration conditions (join model's group)
+          if((bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[model]>payoff_default-threshold) & bands$fitness[i] <= payoff_default-threshold | bands$fitness[i]<=bands$fitness[model]-threshold){
+            bands$patch_id[i] <- bands$patch_id[model]
+          } 
+          
+          #Fusion conditions (join group after being alone)
+          if(bands$group_size[i]==1 & bands$group_size[model]>1 & bands$fitness[i]<= bands$fitness[model]-threshold){
+            bands$patch_id[i] <- bands$patch_id[model]
+          } 
+          
+          #Fussion conditions (group formation)
+          #FIX ME - need to figure out how to then count this as a move for the model as well
+          if(bands$group_size[i]==1 & bands$group_size[model]==1 & bands$fitness[i]<payoff_default & bands$fitness[model]<payoff_default){
+            
+            #find empty patches and randomly select one, assign to new variable new_patch
+            new_patch <- sample(neigh_ind[which(is.na(set))], 1)
+            
+            #assign new patch as the patch for both the agent i and the model
+            bands$patch_id[i] <- new_patch
+            bands$patch_id[model] <- new_patch
+          }
         }
       }
       
-      
-
-      
-      
-          
       
       #Store temp loop output
       loop_results[[j]] <- patches$bands_id 
@@ -327,7 +316,7 @@ loop_results <- list()
 #finish test file
 #keep both local and global options in mind
 #need to log each movement in the for loop going through the agents to see what is actually happening 
-#write fission fusion conditions out nested       
+#write fission fusion conditions out nested?       
 
 
 
