@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 17
+space_range <- 1
 decision_prob <- 0.5
 threshold <- 0
 prop_sample <- 1
