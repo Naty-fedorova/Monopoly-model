@@ -217,13 +217,12 @@ loop_results <- list()
       
       ###FISSION FUSION###
       
-       
-      
       for(i in 1:length(bands$band_id)){
         
         #Fission fusion happens with probability decision_prob for each agent
-        if((rbinom(1,1, decision_prob))==1){
+        if((rbinom(1, 1, decision_prob))==1){
           
+          #local condition
           if(space_range < n_patches){
           #Get index of the neighbours of agent i
           neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
@@ -312,6 +311,7 @@ loop_results <- list()
           }
         }
       }
+      
       
       
       #Store temp loop output
