@@ -319,6 +319,31 @@ loop_results <- list()
 #}      
       
       
+#Fission fusion options:
+#no change
+nc_1 <- c(bands$group_size[i] ==1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model])
+nc_2 <- c(bands$group_size[i] ==1, is.null(bands$group_size[model])==TRUE)
+nc_3 <- c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] > payoff_default - threshold)
+nc_4 <- c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] > payoff_default - threshold)
+
+#fission
+fis_1 <- c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <=payoff_default - threshold, bands$fitness[model] <= payoff_default - threshold)
+fis_2 <- c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] <= payoff_default - threshold)
+fis_3 <- c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] <= payoff_default - threshold)
+fis_4 <- c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] <= bands$fitness[model] - threshold)
+fis_5 <- c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] <= payoff_default - threshold)
+fis_6 <- c(bands$group_size[i] >1, is.null(bands$group_size[model])==TRUE, bands$fitness[i] <= payoff_default - threshold)
+
+#fusion
+fus_1 <- c(bands$group_size[i] ==1, bands$group_size[model] ==1, bands$fitness[i] < payoff_default, bands$fitness[model] < payoff_default)
+
+#fusion, join group
+fusg_1 <- c(bands$group_size[i] ==1, bands$group_size[model] >1, bands$fitness[i] <= bands$fitness[model] - threshold)
+
+#migration
+mig_1 <- c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= payoff_default - threshold, bands$fitness[model] > payoff_default - threshold)
+mig_2 <- c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= bands$fitness[model] - threshold, bands$fitness[model] > payoff_default - threshold)
+
 
       
       
