@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 1
+space_range <- 3
 decision_prob <- 0.5
 threshold <- 0
 prop_sample <- 1
@@ -31,14 +31,17 @@ prop_sample <- 1
 #patches
 world <- matrix(1: patch_dim^2, nrow = patch_dim, ncol = patch_dim, byrow = TRUE)
 
+#set global condition - matrix doesn't need to be padded for in global condition because everyone is a neighbour
+if(space_range < n_patches){
+
+
 #pad the matrix 
 world_2 <- rbind(world, world[1:space_range, ])
 world_3 <- rbind(world[(patch_dim-(space_range-1)):patch_dim, ], world_2)
 world_6 <- cbind(world_3, world_3[, 1:space_range])
 world_padded <- cbind(world_3[ , (patch_dim-(space_range-1)):patch_dim], world_6)
 
-#set global condition
-if(space_range < n_patches){
+
   
   #create list of id's and their neighbours (for local condition)
   patch_neighbours <- list()
@@ -49,13 +52,13 @@ if(space_range < n_patches){
   #Initialize n_patches number of lists within neighbours
   patch_neighbours$neighbours <- vector("list", n_patches)
   
-  #FIX ME - below works for different values of space range to get the outer neighbour set - but for small world's leads to duplicates that need to be removed
+  #FIX ME - below works for different values of space range to get the WHOLE neighbour set - but for small world's leads to duplicates that need to be removed, so unique() added
   for(i in (space_range+1):(patch_dim+space_range)){
     for(j in (space_range+1):(patch_dim+space_range)){
       for(x in -(space_range):space_range){
         for(y in -(space_range):space_range){
           if(x != 0 || y != 0){
-            patch_neighbours$neighbours[[ world_padded[i, j] ]] <- c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y])
+            patch_neighbours$neighbours[[ world_padded[i, j] ]] <- unique(c( patch_neighbours$neighbours[[ world_padded[i, j] ]] , world_padded[i+x, j+y]))
           }
         }
       }
@@ -221,6 +224,7 @@ loop_results <- list()
         #Fission fusion happens with probability decision_prob for each agent
         if((rbinom(1,1, decision_prob))==1){
           
+          if(space_range < n_patches){
           #Get index of the neighbours of agent i
           neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
           
@@ -236,6 +240,14 @@ loop_results <- list()
           #fittest agent
           model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
           
+          }else {
+            #global condition - pick a neighbour from any patch
+            #select subset of all models prop_sample to choose from
+            sample_model_ind <- sample(bands$band_id, size = (prop_sample * length(bands$band_id)))
+            
+            #fittest agent becomes model
+            model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
+          }
           
           
           #Decision tree
@@ -314,7 +326,6 @@ loop_results <- list()
 
 #TO DO
 #finish test file
-#keep both local and global options in mind
 #need to log each movement in the for loop going through the agents to see what is actually happening 
 #write fission fusion conditions out nested?       
 
