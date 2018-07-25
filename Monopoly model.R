@@ -22,7 +22,7 @@ death_par_1 <- 0.8
 death_par_2 <- 5
 
 #Fission fusion parameters
-space_range <- 3
+space_range <- 1
 decision_prob <- 0.5
 threshold <- 0
 prop_sample <- 1
@@ -269,7 +269,7 @@ loop_results <- list()
           }
           
           #Fission conditions (move to empty patch)
-          if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[1]<=payoff_default-threshold & bands$fitness[model]<=payoff_default-threshold){
+          if(bands$group_size[i]>1 & bands$group_size[model]>1 & bands$fitness[i]<=payoff_default-threshold & bands$fitness[model]<=payoff_default-threshold){
             #move to empty patch in neighbourhood
             #FIX ME - how I do this depends on what is done above with the neighbour index
             
