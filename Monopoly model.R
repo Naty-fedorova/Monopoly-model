@@ -279,14 +279,12 @@ for(i in 1:length(bands$band_id)){
     
     if(nc_1 == TRUE | nc_2 == TRUE | nc_2 == TRUE | nc_4 == TRUE ){
       #do nothing
-    }
-    if(fis_1 == TRUE | fis_2 == TRUE | fis_3 == TRUE | fis_4 == TRUE | fis_5 == TRUE | fis_6 == TRUE){
+    }else if(fis_1 == TRUE | fis_2 == TRUE | fis_3 == TRUE | fis_4 == TRUE | fis_5 == TRUE | fis_6 == TRUE){
       #fission - move to empty patch in neighbourhood
       #FIX ME - how I do this depends on what is done above with the neighbour index
       #find empty patches and randomly select one to move to 
       bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
-    }
-    if(fus_1 == TRUE){
+    }else if(fus_1 == TRUE){
       #fusion - join together to make a group
       #FIX ME - need to figure out how to then count this as a move for the model as well
       #find empty patches and randomly select one, assign to new variable new_patch
@@ -295,8 +293,7 @@ for(i in 1:length(bands$band_id)){
       #assign new patch as the patch for both the agent i and the model
       bands$patch_id[i] <- new_patch
       bands$patch_id[model] <- new_patch
-    }
-    if(fusg_1 == TRUE | mig_1 == TRUE | mig_2 == TRUE){
+    }else if(fusg_1 == TRUE | mig_1 == TRUE | mig_2 == TRUE){
       #fusion - join model's group after being alone
       #migrate to models group
       bands$patch_id[i] <- bands$patch_id[model]
