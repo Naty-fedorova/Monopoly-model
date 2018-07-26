@@ -25,7 +25,7 @@ death_par_2 <- 5
 space_range <- 1
 decision_prob <- 0.5
 threshold <- 0
-prop_sample <- 1
+prop_sample <- 0.35
 
 
 #patches
@@ -222,49 +222,56 @@ for(i in 1:length(bands$band_id)){
   #Fission fusion happens with probability decision_prob for each agent
   if((rbinom(1, 1, decision_prob))==1){
     
-    #local condition
-    if(space_range < n_patches){
-      #Get index of the neighbours of agent i
-      neigh_ind <- patch_neighbours$neighbours[[bands$patch_id[i]]]
-      
-      #Get index of bands that are present in those neighboring patches
-      #Don't forget that set below is filled with INDEXES, not agent IDs
-      set <- match(neigh_ind, bands$patch_id)
-      set_pos <- set[!is.na(set)]
-      
-      #Select subset prop_sample from that
-      #FIX ME - what do I do with odd numbers here i.e. when the proportion is not a whole number? 
-      sample_model_ind <- sample(set_pos, size = (prop_sample * length(set_pos)))
-      
-      #fittest agent
-      model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
-      
-    }else {
+    #global condition
+    if(space_range > n_patches){
       #global condition - pick a neighbour from any patch
       #select subset of all models prop_sample to choose from
       sample_model_ind <- sample(bands$band_id, size = (prop_sample * length(bands$band_id)))
       
       #fittest agent becomes model
       model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
+    } else{
+      #local condition
+      #Get neighbour patches of agent i
+      neigh_patchs <- patch_neighbours$neighbours[[bands$patch_id[i]]]
+      
+      #Get index of bands that are present in those neighboring patches
+      #Don't forget that set below is filled with INDEXES, not agent IDs
+      set <- match(neigh_patchs, bands$patch_id)
+      set_pos <- set[!is.na(set)]
+      
+      if(is.na(sum(set_pos)) == TRUE){ 
+        #model groupsize = NULL
+        model_groupsize <- NULL
+      } else{
+        
+        #Select subset prop_sample from that
+        sample_model_ind <- sample(set_pos, size = round((prop_sample * length(set_pos))))
+        
+        #fittest agent
+        model <- sample_model_ind[which.max(bands$fitness[sample_model_ind])]
+        
+        #and so that the null conditions work...
+        model_groupsize <- 1
+      }
     }
-    
     
     #Decision tree
     
     #Fission fusion options:
     #no change
-    nc_1 <- all(c(bands$group_size[i] ==1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model]))
-    nc_2 <- all(c(bands$group_size[i] ==1, is.null(bands$group_size[model])==TRUE))
+    nc_1 <- all(c(bands$group_size[i] ==1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model])) 
+    nc_2 <- all(c(bands$group_size[i] ==1, is.null(model_groupsize) == TRUE )) 
     nc_3 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] > payoff_default - threshold))
     nc_4 <- all(c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] > payoff_default - threshold))
-    
+                
     #fission
     fis_1 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <=payoff_default - threshold, bands$fitness[model] <= payoff_default - threshold))
     fis_2 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] <= payoff_default - threshold))
     fis_3 <- all(c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] >= bands$fitness[model], bands$fitness[i] <= payoff_default - threshold))
     fis_4 <- all(c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] <= bands$fitness[model] - threshold))
     fis_5 <- all(c(bands$group_size[i] >1, bands$group_size[model] ==1, bands$fitness[i] <= payoff_default - threshold))
-    fis_6 <- all(c(bands$group_size[i] >1, is.null(bands$group_size[model])==TRUE, bands$fitness[i] <= payoff_default - threshold))
+    fis_6 <- all(c(bands$group_size[i] >1, is.null(model_groupsize) == TRUE , bands$fitness[i] <= payoff_default - threshold))
     
     #fusion
     fus_1 <- all(c(bands$group_size[i] ==1, bands$group_size[model] ==1, bands$fitness[i] < payoff_default, bands$fitness[model] < payoff_default))
@@ -275,31 +282,32 @@ for(i in 1:length(bands$band_id)){
     #migration
     mig_1 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= payoff_default - threshold, bands$fitness[model] > payoff_default - threshold))
     mig_2 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= bands$fitness[model] - threshold, bands$fitness[model] > payoff_default - threshold))
-    
-    
-    if(nc_1 == TRUE | nc_2 == TRUE | nc_2 == TRUE | nc_4 == TRUE ){
-      #do nothing
-    }else if(fis_1 == TRUE | fis_2 == TRUE | fis_3 == TRUE | fis_4 == TRUE | fis_5 == TRUE | fis_6 == TRUE){
-      #fission - move to empty patch in neighbourhood
-      #FIX ME - how I do this depends on what is done above with the neighbour index
-      #find empty patches and randomly select one to move to 
-      bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
-    }else if(fus_1 == TRUE){
-      #fusion - join together to make a group
-      #FIX ME - need to figure out how to then count this as a move for the model as well
-      #find empty patches and randomly select one, assign to new variable new_patch
-      new_patch <- sample(neigh_ind[which(is.na(set))], 1)
-      
-      #assign new patch as the patch for both the agent i and the model
-      bands$patch_id[i] <- new_patch
-      bands$patch_id[model] <- new_patch
-    }else if(fusg_1 == TRUE | mig_1 == TRUE | mig_2 == TRUE){
-      #fusion - join model's group after being alone
-      #migrate to models group
-      bands$patch_id[i] <- bands$patch_id[model]
-    }
+                
+                
+                if(nc_1 == TRUE | nc_2 == TRUE | nc_2 == TRUE | nc_4 == TRUE ){
+                  #do nothing
+                }else if(fis_1 == TRUE | fis_2 == TRUE | fis_3 == TRUE | fis_4 == TRUE | fis_5 == TRUE | fis_6 == TRUE){
+                  #fission - move to empty patch in neighbourhood
+                  #FIX ME - how I do this depends on what is done above with the neighbour index
+                  #find empty patches and randomly select one to move to 
+                  bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+                }else if(fus_1 == TRUE){
+                  #fusion - join together to make a group
+                  #FIX ME - need to figure out how to then count this as a move for the model as well
+                  #find empty patches and randomly select one, assign to new variable new_patch
+                  new_patch <- sample(neigh_ind[which(is.na(set))], 1)
+                  
+                  #assign new patch as the patch for both the agent i and the model
+                  bands$patch_id[i] <- new_patch
+                  bands$patch_id[model] <- new_patch
+                }else if(fusg_1 == TRUE | mig_1 == TRUE | mig_2 == TRUE){
+                  #fusion - join model's group after being alone
+                  #migrate to models group
+                  bands$patch_id[i] <- bands$patch_id[model]
+                }
   }
 }
+
 
 
 
