@@ -6,10 +6,13 @@ calc_groupsize <- function(bands, patches){
   
   #arguments: band list, patch list
   
-  #return - nada, it should just create and write the bands$groupsize sublist
+  #return - vector of groupsizes
   
-  for(i in 1:length(bands$band_id)){
-    bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
+  groupsizes <- rep(0, length(bands$patch_id))
+  
+  for(i in 1:length(bands$patch_id)){
+    groupsizes<- length(patches$bands_id[[bands$patch_id[i]]])
   }
+  return(groupsizes)
 }
 
