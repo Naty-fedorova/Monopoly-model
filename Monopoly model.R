@@ -114,10 +114,12 @@ for (i in 1:n_patches){
 
 ###FITNESS###
 
+#Calculate groupsizes
+
+bands$groupsize <- calc_groupsize(bands = bands, patches = patches)
+
 #Groupsize and payoff calculation 
 for(i in 1:length(bands$band_id)){
-  # calculate groupsizes for each agent by indexing band id's in patches by patch ids in bands and getting the length of that (since its a vector, kinda)  
-  bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
   #calculate each bands payoff using crema's equation and sampling from a normal distribution, the 1 in rnorm is number of observations
   bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
 }
