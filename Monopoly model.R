@@ -24,7 +24,7 @@ death_par_2 <- 5
 #Fission fusion parameters
 space_range <- 1
 decision_prob <- 0.5
-threshold <- 0
+threshold <- 3
 prop_sample <- 0.35
 
 
@@ -87,6 +87,7 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
 loop_results <- list()
 
 
+
 #############################################################################################################################################################MODEL
 
 
@@ -109,6 +110,7 @@ for (i in 1:n_patches){
   }
 }
 
+#############################################################################################################################################################Basically where loop begins
 
 ###FITNESS###
 
@@ -209,7 +211,7 @@ for (i in 1:n_patches){
   }
 }
 
-#Groupsize and payoff calculation 
+#Groupsize calculation 
 for(i in 1:length(bands$band_id)){
   # calculate groupsizes for each agent by indexing band id's in patches by patch ids in bands and getting the length of that (since its a vector, kinda)  
   bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
@@ -243,6 +245,8 @@ for(i in 1:length(bands$band_id)){
       if(is.na(sum(set_pos)) == TRUE){ 
         #model groupsize = NULL
         model_groupsize <- NULL
+        
+        #FIX ME - need to overwrite model from previous round 
       } else{
         
         #Select subset prop_sample from that
@@ -255,6 +259,10 @@ for(i in 1:length(bands$band_id)){
         model_groupsize <- 1
       }
     }
+    
+    print(model)
+    print(bands$group_size[model] > 1)
+    print(c(i, model, bands$fitness[i], bands$fitness[model], bands$group_size[i], bands$group_size[model]))
     
     #Decision tree
     
@@ -282,20 +290,22 @@ for(i in 1:length(bands$band_id)){
     #migration
     mig_1 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= payoff_default - threshold, bands$fitness[model] > payoff_default - threshold))
     mig_2 <- all(c(bands$group_size[i] >1, bands$group_size[model] >1, bands$fitness[i] <= bands$fitness[model] - threshold, bands$fitness[model] > payoff_default - threshold))
+    
+    print(c(nc_1, nc_2, nc_3, nc_4, fis_1, fis_2, fis_3, fis_4, fis_5, fis_6, fus_1, fusg_1, mig_1, mig_2))
                 
                 
-                if(nc_1 == TRUE | nc_2 == TRUE | nc_2 == TRUE | nc_4 == TRUE ){
+                if(nc_1 == TRUE | nc_2 == TRUE | nc_3 == TRUE | nc_4 == TRUE ){
                   #do nothing
                 }else if(fis_1 == TRUE | fis_2 == TRUE | fis_3 == TRUE | fis_4 == TRUE | fis_5 == TRUE | fis_6 == TRUE){
                   #fission - move to empty patch in neighbourhood
                   #FIX ME - how I do this depends on what is done above with the neighbour index
                   #find empty patches and randomly select one to move to 
-                  bands$patch_id[i] <- sample(neigh_ind[which(is.na(set))], 1)
+                  bands$patch_id[i] <- sample(neigh_patchs[which(is.na(set))], 1)
                 }else if(fus_1 == TRUE){
                   #fusion - join together to make a group
                   #FIX ME - need to figure out how to then count this as a move for the model as well
                   #find empty patches and randomly select one, assign to new variable new_patch
-                  new_patch <- sample(neigh_ind[which(is.na(set))], 1)
+                  new_patch <- sample(neigh_patchs[which(is.na(set))], 1)
                   
                   #assign new patch as the patch for both the agent i and the model
                   bands$patch_id[i] <- new_patch
@@ -312,7 +322,7 @@ for(i in 1:length(bands$band_id)){
 
 
 #Store temp loop output
-loop_results[[j]] <- patches$bands_id 
+loop_results[[j]] <- patches$bands_id
 #}      
 
 
