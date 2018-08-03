@@ -99,16 +99,8 @@ n_bands <- length(bands$band_id)
 
 
 #Add bands ID to patches list
-for (i in 1:n_patches){
-  #Temporary vector that stores index of which patch_id is the same as i
-  temp <- which(bands$patch_id == i)
-  if (length(temp) == 0) {
-    patches$bands_id[[i]] <- NA
-  } else {
-    #If the temp vector actually includes something, it is used to index band_id and put it into the patches list
-    patches$bands_id[[i]] <- bands$band_id[temp]
-  }
-}
+
+patches$bands_id <- bands_in_patches(bands = bands, patches = patches, n_patches = n_patches)
 
 #############################################################################################################################################################Basically where loop begins
 
@@ -118,7 +110,7 @@ for (i in 1:n_patches){
 
 bands$groupsize <- calc_groupsize(bands = bands, patches = patches)
 
-#Groupsize and payoff calculation 
+#Payoff calculation 
 for(i in 1:length(bands$band_id)){
   #calculate each bands payoff using crema's equation and sampling from a normal distribution, the 1 in rnorm is number of observations
   bands$payoff[i] <- rnorm(1, mean = payoff_default + (bands$group_size[i] -1)^cooperative_benefit, sigma)
@@ -200,24 +192,11 @@ bands$fitness <- append(bands$fitness, bands$fitness[birth_index])
 bands$patch_id <- append(bands$patch_id, bands$patch_id[birth_index])
 
 #Update band ids in patches list and update groupsize 
-
 #Add bands ID to patches list
-for (i in 1:n_patches){
-  #Temporary vector that stores index of which patch_id is the same as i
-  temp <- which(bands$patch_id == i)
-  if (length(temp) == 0) {
-    patches$bands_id[[i]] <- NA
-  } else {
-    #If the temp vector actually includes something, it is used to index band_id and put it into the patches list
-    patches$bands_id[[i]] <- bands$band_id[temp]
-  }
-}
+patches$bands_id <- bands_in_patches(bands = bands, patches = patches, n_patches = n_patches)
 
 #Groupsize calculation 
-for(i in 1:length(bands$band_id)){
-  # calculate groupsizes for each agent by indexing band id's in patches by patch ids in bands and getting the length of that (since its a vector, kinda)  
-  bands$group_size[i] <- length(patches$bands_id[[bands$patch_id[i]]])
-}
+bands$groupsize <- calc_groupsize(bands = bands, patches = patches)
 
 ###FISSION FUSION###
 
