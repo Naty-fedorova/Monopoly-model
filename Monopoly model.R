@@ -86,7 +86,7 @@ bands$patch_id <- sample(n_patches, n_bands_ini, replace = TRUE)
 #Initialize matrix to hold loop results
 loop_results <- list()
 
-
+source("utility functions.R")
 
 #############################################################################################################################################################MODEL
 
